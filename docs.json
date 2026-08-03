@@ -80,6 +80,65 @@
       },
       {
         "tab": "Home Lab"
+      },
+      {
+        "tab": "Getting Started",
+        "pages": [
+          "index"
+        ]
+      },
+      {
+        "tab": "Latest",
+        "icon": "rss",
+        "pages": [
+          "index"
+        ]
+      },
+      {
+        "tab": "CTF Writeups",
+        "icon": "flag",
+        "pages": [
+          "posts/ctf/htb-blackfield",
+          "posts/ctf/picoctf-buffer-overflow"
+        ]
+      },
+      {
+        "tab": "Vulnerability Research",
+        "icon": "bug",
+        "pages": [
+          "posts/research/log4shell-analysis"
+        ]
+      },
+      {
+        "tab": "Tools & Tradecraft",
+        "icon": "wrench",
+        "pages": [
+          "posts/tools/nmap-recon-cheatsheet"
+        ]
+      },
+      {
+        "tab": "Templates",
+        "icon": "file-code",
+        "pages": [
+          "templates/ctf-writeup",
+          "templates/vulnerability-analysis",
+          "templates/tool-review",
+          "templates/formatting-guide",
+          "templates/components-reference"
+        ]
+      },
+      {
+        "tab": "Home Lab"
+      },
+      {
+        "tab": "Hacksmarter Labs",
+        "icon": "file-code",
+        "pages": [
+          "Hacksmarter Labs/first",
+          "Hacksmarter Labs/second",
+          "Hacksmarter Labs/third",
+          "Hacksmarter Labs/fourth"
+        ]
       }
     ]
   },
