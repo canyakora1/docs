@@ -18,44 +18,57 @@
         ]
       }
     ],
-    "groups": [
+    "tabs": [
       {
-        "group": "Getting Started",
+        "tab": "Getting Started",
         "pages": [
           "index"
         ]
       },
       {
-        "group": "// Latest",
+        "tab": "Latest",
         "icon": "rss",
         "pages": [
           "index"
         ]
       },
       {
-        "group": "// CTF Writeups",
+        "tab": "CTF Writeups",
         "icon": "flag",
-        "pages": [
-          "posts/ctf/htb-blackfield",
-          "posts/ctf/picoctf-buffer-overflow"
+        "groups": [
+          {
+            "group": "Hacksmarter Labs",
+            "pages": []
+          },
+          {
+            "group": "TryHackMe",
+            "pages": []
+          },
+          {
+            "group": "HTB Labs",
+            "pages": [
+              "posts/ctf/picoctf-buffer-overflow",
+              "posts/ctf/htb-blackfield"
+            ]
+          }
         ]
       },
       {
-        "group": "// Vulnerability Research",
+        "tab": "Vulnerability Research",
         "icon": "bug",
         "pages": [
           "posts/research/log4shell-analysis"
         ]
       },
       {
-        "group": "// Tools & Tradecraft",
+        "tab": "Tools & Tradecraft",
         "icon": "wrench",
         "pages": [
           "posts/tools/nmap-recon-cheatsheet"
         ]
       },
       {
-        "group": "// Templates",
+        "tab": "Templates",
         "icon": "file-code",
         "pages": [
           "templates/ctf-writeup",
@@ -66,18 +79,7 @@
         ]
       },
       {
-        "group": "// Home Lab",
-        "pages": []
-      },
-      {
-        "group": "Hacksmarter Labs",
-        "icon": "file-code",
-        "pages": [
-          "Hacksmarter Labs/first",
-          "Hacksmarter Labs/second",
-          "Hacksmarter Labs/third",
-          "Hacksmarter Labs/fourth"
-        ]
+        "tab": "Home Lab"
       }
     ]
   },
