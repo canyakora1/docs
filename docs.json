@@ -18,16 +18,16 @@
         ]
       }
     ],
-    "dropdowns": [
+    "anchors": [
       {
-        "dropdown": "// Latest",
+        "anchor": "// Latest",
         "icon": "rss",
         "pages": [
           "index"
         ]
       },
       {
-        "dropdown": "// CTF Writeups",
+        "anchor": "// CTF Writeups",
         "icon": "flag",
         "pages": [
           "posts/ctf/htb-blackfield",
@@ -35,21 +35,21 @@
         ]
       },
       {
-        "dropdown": "// Vulnerability Research",
+        "anchor": "// Vulnerability Research",
         "icon": "bug",
         "pages": [
           "posts/research/log4shell-analysis"
         ]
       },
       {
-        "dropdown": "// Tools & Tradecraft",
+        "anchor": "// Tools & Tradecraft",
         "icon": "wrench",
         "pages": [
           "posts/tools/nmap-recon-cheatsheet"
         ]
       },
       {
-        "dropdown": "// Templates",
+        "anchor": "// Templates",
         "icon": "file-code",
         "pages": [
           "templates/ctf-writeup",
@@ -60,10 +60,10 @@
         ]
       },
       {
-        "dropdown": "// Home Lab"
+        "anchor": "// Home Lab"
       },
       {
-        "dropdown": "Hacksmarter Labs",
+        "anchor": "Hacksmarter Labs",
         "icon": "file-code",
         "pages": [
           "Hacksmarter Labs/first",
