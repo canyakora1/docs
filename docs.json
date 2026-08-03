@@ -82,7 +82,15 @@
         "tab": "Home Lab"
       },
       {
-        "tab": "GOAD"
+        "tab": "GOAD",
+        "icon": "file-code",
+        "pages": [
+          "GOAD/Overview",
+          "GOAD/Installation",
+          "GOAD/Enumeration",
+          "GOAD/Sevenkingdoms.local",
+          "GOAD/North.Sevenkingdom.local"
+        ]
       },
       {
         "tab": "Windows Pentesting"
