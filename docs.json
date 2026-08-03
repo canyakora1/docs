@@ -80,6 +80,15 @@
       },
       {
         "tab": "Home Lab"
+      },
+      {
+        "tab": "GOAD"
+      },
+      {
+        "tab": "Windows Pentesting"
+      },
+      {
+        "tab": "Linux Pentesting"
       }
     ]
   },
