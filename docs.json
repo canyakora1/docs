@@ -20,6 +20,12 @@
     ],
     "groups": [
       {
+        "group": "Getting Started",
+        "pages": [
+          "index"
+        ]
+      },
+      {
         "group": "// Latest",
         "icon": "rss",
         "pages": [
