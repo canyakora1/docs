@@ -1,0 +1,57 @@
+---
+title: "Components Reference"
+sidebarTitle: "Components reference"
+description: "Quick reference to every Mintlify component with a security-flavored example."
+---
+
+## Quick index
+
+| Component | Use for |
+| --- | --- |
+| `<Note>` | Neutral context |
+| `<Tip>` | Best practice / shortcut |
+| `<Warning>` | Danger / legal / destructive |
+| `<Info>` | Metadata (target, CVSS, tag) |
+| `<Check>` | Success / flag captured |
+| `<Steps>` | Kill chain, ordered process |
+| `<Accordion>` | Collapse long output |
+| `<AccordionGroup>` | Stack related accordions |
+| `<Tabs>` / `<Tab>` | Alternatives (OS, protocol, tool) |
+| `<CardGroup>` / `<Card>` | Landing pages, category jumps |
+| `<Frame>` | Wrap screenshots with a caption |
+
+## Frame \+ screenshot
+
+```mdx
+<Frame caption="Burp intercept of the JNDI payload">
+  <img src="/images/log4shell-burp.png" />
+</Frame>
+```
+
+## Update / expandable
+
+<Update label="2026-01-15" description="Added Shadow Credentials variant">
+  Added `certipy shadow auto` for the `svc_backup` hop after PKINIT hardening broke the old `Rubeus asktgt` path.
+</Update>
+
+```mdx
+<Update label="YYYY-MM-DD" description="...">
+  Change notes.
+</Update>
+```
+
+## Params / fields (great for API-style tool docs)
+
+```mdx
+<ParamField path="target" type="string" required>
+  Target IP or CIDR.
+</ParamField>
+
+<ParamField path="rate" type="integer" default={5000}>
+  Packets per second floor.
+</ParamField>
+```
+
+## Full component list
+
+Everything Mintlify supports: [https://mintlify.com/docs/components](https://mintlify.com/docs/components)

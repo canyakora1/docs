@@ -1,0 +1,110 @@
+---
+title: "Template: CTF Writeup"
+sidebarTitle: "CTF writeup"
+description: "Copy-paste starter for HTB / THM / picoCTF / weekend CTF walkthroughs."
+---
+
+<Tip>
+  **How to use:** copy the raw source below into a new file under `posts/ctf/<box-name>.mdx`. Fill in the sections. Delete the tabs you don't need.
+</Tip>
+
+## Frontmatter
+
+```mdx
+---
+title: "HTB: BoxName"
+sidebarTitle: "HTB: BoxName"
+description: "One-liner about the box and what you learned."
+tag: "MEDIUM"
+---
+```
+
+<Info>
+  `tag` values: `EASY`, `MEDIUM`, `HARD`, `INSANE`, `CRITICAL`. They render as a colored pill next to the sidebar item.
+</Info>
+
+## Recommended structure
+
+<Steps>
+  <Step title="Info box" icon="circle-info">
+    Target, OS, difficulty, points. Use `<Info>`.
+  </Step>
+  <Step title="TL;DR" icon="list-check">
+    4-6 Steps summarizing the kill chain.
+  </Step>
+  <Step title="Recon" icon="radar">
+    Nmap, subdomain enum, whatever surfaces first.
+  </Step>
+  <Step title="Foothold" icon="door-open">
+    First shell / first creds.
+  </Step>
+  <Step title="Lateral / Privesc" icon="stairs">
+    Each hop with the exact command.
+  </Step>
+  <Step title="Root / Flag" icon="flag">
+    Final win, then loot table.
+  </Step>
+  <Step title="Defensive notes" icon="shield">
+    What the blue team should do differently.
+  </Step>
+</Steps>
+
+## Raw source to copy
+
+````mdx expandable
+---
+title: "HTB: BoxName"
+sidebarTitle: "HTB: BoxName"
+description: "..."
+tag: "MEDIUM"
+---
+
+<Info>
+  **`[target]`** `box.htb` · **OS:** Linux · **Difficulty:** Medium · **Points:** 30
+</Info>
+
+## TL;DR
+
+<Steps>
+  <Step title="Recon">Nmap reveals X, Y, Z.</Step>
+  <Step title="Foothold">Exploit CVE-XXXX-YYYY for RCE as `www-data`.</Step>
+  <Step title="User">Reuse creds from config file.</Step>
+  <Step title="Root">Sudo misconfig on `/usr/bin/tool`.</Step>
+</Steps>
+
+## Recon
+
+```bash Terminal
+nmap -sC -sV -oN nmap/initial $IP
+```
+
+<Accordion title="Full nmap output">
+```
+(paste output here)
+```
+</Accordion>
+
+## Foothold
+
+<Warning>Explain the vulnerable code / config before showing the exploit.</Warning>
+
+```python exploit.py
+# ...
+```
+
+## Privesc
+
+## Root
+
+<Check>Flag captured.</Check>
+
+## Loot
+
+| User | Cred | Source |
+| --- | --- | --- |
+| user1 | ... | ... |
+
+## Defensive notes
+
+- ...
+````

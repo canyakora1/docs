@@ -1,0 +1,128 @@
+---
+title: "Formatting Guide"
+sidebarTitle: "Formatting guide"
+description: "Every component and snippet used across the blog, with source you can paste."
+---
+
+<Note>
+  Everything below is copy-paste. Live example on top, MDX source below.
+</Note>
+
+## Callouts
+
+```mdx Source
+<Note>...</Note>
+<Tip>...</Tip>
+<Warning>...</Warning>
+<Check>...</Check>
+<Info>...</Info>
+```
+
+## Code blocks
+
+Always give code blocks a filename or title. Add `expandable` for long payloads.
+
+```python exploit.py
+from pwn import *
+p = process('./vuln')
+p.sendline(b'A'*44 + p32(0x80491e2))
+p.interactive()
+```
+
+````mdx Source
+```python exploit.py
+...
+```
+
+```python exploit.py expandable
+...
+```
+````
+
+### Multi-tab codeblocks
+
+<Tabs>
+  <Tab title="bash">
+    ```bash
+    nmap -sC -sV -oN scan $IP
+    ```
+  </Tab>
+  <Tab title="powershell">
+    ```powershell
+    Test-NetConnection $IP -Port 445
+    ```
+  </Tab>
+</Tabs>
+
+## Steps (kill chain)
+
+## Accordions (for long output)
+
+<Accordion title="Full nmap output">
+  ```text
+  22/tcp open ssh
+  80/tcp open http
+  ```
+</Accordion>
+
+## Cards
+
+<CardGroup cols={2}>
+  <Card title="Recon" icon="radar" href="/posts/tools/nmap-recon-cheatsheet">
+    Fast surface mapping.
+  </Card>
+
+  <Card title="Exploit" icon="bug" href="/posts/research/log4shell-analysis">
+    Weaponize what you find.
+  </Card>
+</CardGroup>
+
+## Tables
+
+| Flag | Purpose |
+| --- | --- |
+| `-sS` | SYN stealth |
+| `-sV` | Version detection |
+
+## Loot / cred tables
+
+| User | Hash | Source |
+| --- | --- | --- |
+| support | AS-REP | GetNPUsers |
+
+## ASCII banners
+
+````text
+```ansi
+[38;5;46m ____   ___   ___ _____
+|  _ \ / _ \ / _ \_   _|
+[0m
+```
+````
+
+## Difficulty tags
+
+Set `tag: "HARD"` in frontmatter. Suggested values:
+
+<CardGroup cols={5}>
+  <Card title="EASY" icon="circle">
+  </Card>
+
+  <Card title="MEDIUM" icon="circle-half-stroke">
+  </Card>
+
+  <Card title="HARD" icon="circle-exclamation">
+  </Card>
+
+  <Card title="INSANE" icon="skull">
+  </Card>
+
+  <Card title="CRITICAL" icon="triangle-exclamation">
+  </Card>
+</CardGroup>
+
+## Icons
+
+Mintlify supports Font Awesome, Lucide, and Tabler. Common security-flavored picks:
+
+`terminal`, `flag`, `bug`, `shield`, `skull`, `key`, `lock`, `unlock-keyhole`, `network-wired`, `radar`, `fingerprint`, `crosshairs`, `magnifying-glass`, `wrench`, `screwdriver-wrench`, `file-shield`, `user-secret`, `eye`.

