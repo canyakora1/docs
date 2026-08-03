@@ -35,17 +35,18 @@
       {
         "tab": "CTF Writeups",
         "icon": "flag",
-        "groups": [
+        "dropdowns": [
           {
-            "group": "Hacksmarter Labs",
-            "pages": []
+            "dropdown": "Hacksmarter Labs",
+            "pages": [
+              "untitled-page-3"
+            ]
           },
           {
-            "group": "TryHackMe",
-            "pages": []
+            "dropdown": "TryHackMe"
           },
           {
-            "group": "HTB Labs",
+            "dropdown": "HTB Labs",
             "pages": [
               "posts/ctf/picoctf-buffer-overflow",
               "posts/ctf/htb-blackfield"

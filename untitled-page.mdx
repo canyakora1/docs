@@ -4,7 +4,9 @@ title: "castelblack.north.sevenkingdoms.local"
 
 # Enumeration
 
-Document all enumeration don on the host to find vulnerable and attack paths
+<Note>
+  Document all enumeration don on the host to find vulnerable and attack paths
+</Note>
 
 ```shellscript
 nmap -sCV 10.10.10.22 -oA nmapscan
@@ -124,7 +126,6 @@ SeImpersonatePrivilege        Impersonate a client after authentication Enabled
 SeCreateGlobalPrivilege       Create global objects                     Enabled 
 SeIncreaseWorkingSetPrivilege Increase a process working set            Disabled
 PS C:\inetpub> dir
-
 ```
 
 # Privilege Escalation
@@ -486,7 +487,6 @@ b'USER'      msdb       IMPERSONATE       GRANT        dc_admin              MS_
 b'LOGIN'     b''        IMPERSONATE       GRANT        NORTH\samwell.tarly   sa                             
 b'LOGIN'     b''        IMPERSONATE       GRANT        NORTH\brandon.stark   NORTH\jon.snow                 
 SQL (sa  dbo@msdb)> 
-
 ```
 
 #### **Enumerate Using NXC**
