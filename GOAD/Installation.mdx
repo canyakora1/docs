@@ -19,7 +19,7 @@ Install | Vagrant | HashiCorp Developer
 vagrant plugin install vagrant-reload vagrant-vmware-desktop winrm winrm-fs winrm-elevated
 ```
 
-## Python3 Virtual env Install
+### Python3 Virtual env Install
 
 I will be using a python virtual environment `venv` to deploy GOAD
 
@@ -29,6 +29,8 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
+## VMWare GOAD Installation
+
 ### Check for dependencies
 
 ```bash
@@ -36,14 +38,16 @@ source venv/bin/activate
 GOAD/vmware/local/192.168.56.X > check
 ```
 
-## Install
+### Install
 
 - To install run the goad script and launch install or use the goad script arguments
 
 ```bash
 ./goad.sh -p vmware
 GOAD/vmware/local/192.168.56.X > set_lab <lab>  # here choose the lab you want (GOAD/GOAD-Light/NHA/SCCM)
+
 GOAD/vmware/local/192.168.56.X > set_ip_range <ip_range>  # here choose the  ip range you want to use ex: 192.168.56 (only the first three digits)
+
 GOAD/vmware/local/192.168.56.X > install
 ```
 
