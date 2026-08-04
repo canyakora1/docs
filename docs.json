@@ -71,7 +71,8 @@
         "tab": "Tools & Tradecraft",
         "icon": "wrench",
         "pages": [
-          "posts/tools/nmap-recon-cheatsheet"
+          "posts/tools/nmap-recon-cheatsheet",
+          "untitled-page-4"
         ]
       },
       {
@@ -102,7 +103,12 @@
         ]
       },
       {
-        "tab": "Windows Pentesting"
+        "tab": "Windows Pentesting",
+        "pages": [
+          "ad-enum",
+          "ad-recon",
+          "smb-enum"
+        ]
       },
       {
         "tab": "Linux Pentesting"
