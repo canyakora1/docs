@@ -1,0 +1,118 @@
+---
+title: "meereen.essos.local"
+tag: "MEDIUM"
+---
+
+## Enumeration
+
+Document all enumeration don on the host to find vulnerable and attack paths
+
+```bash terminal
+nmap -Pn -sC -sV -p- --min-rate=200 10.10.10.12 -T4                                                         
+Starting Nmap 7.95 ( https://nmap.org ) at 2025-12-14 14:59 EST
+Nmap scan report for essos.local (10.10.10.12)
+Host is up (0.00020s latency).
+Not shown: 65508 closed tcp ports (reset)
+PORT      STATE SERVICE       VERSION
+53/tcp    open  domain        Simple DNS Plus
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2025-12-14 20:00:32Z)
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: essos.local, Site: Default-First-Site-Name)
+|_ssl-date: 2025-12-14T20:01:28+00:00; -1s from scanner time.
+| ssl-cert: Subject: commonName=meereen.essos.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:<unsupported>, DNS:meereen.essos.local
+| Not valid before: 2025-10-18T19:21:41
+|_Not valid after:  2026-10-18T19:21:41
+445/tcp   open  microsoft-ds  Windows Server 2016 Standard Evaluation 14393 microsoft-ds (workgroup: ESSOS)
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  ssl/ldap      Microsoft Windows Active Directory LDAP (Domain: essos.local, Site: Default-First-Site-Name)
+| ssl-cert: Subject: commonName=meereen.essos.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:<unsupported>, DNS:meereen.essos.local
+| Not valid before: 2025-10-18T19:21:41
+|_Not valid after:  2026-10-18T19:21:41
+|_ssl-date: 2025-12-14T20:01:28+00:00; -1s from scanner time.
+3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: essos.local, Site: Default-First-Site-Name)
+| ssl-cert: Subject: commonName=meereen.essos.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:<unsupported>, DNS:meereen.essos.local
+| Not valid before: 2025-10-18T19:21:41
+|_Not valid after:  2026-10-18T19:21:41
+|_ssl-date: 2025-12-14T20:01:28+00:00; -1s from scanner time.
+3269/tcp  open  ssl/ldap      Microsoft Windows Active Directory LDAP (Domain: essos.local, Site: Default-First-Site-Name)
+|_ssl-date: 2025-12-14T20:01:28+00:00; -1s from scanner time.
+| ssl-cert: Subject: commonName=meereen.essos.local
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:<unsupported>, DNS:meereen.essos.local
+| Not valid before: 2025-10-18T19:21:41
+|_Not valid after:  2026-10-18T19:21:41
+3389/tcp  open  ms-wbt-server Microsoft Terminal Services
+| ssl-cert: Subject: commonName=meereen.essos.local
+| Not valid before: 2025-10-17T18:46:33
+|_Not valid after:  2026-04-18T18:46:33
+|_ssl-date: 2025-12-14T20:01:28+00:00; -1s from scanner time.
+5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+5986/tcp  open  ssl/http      Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_ssl-date: 2025-12-14T20:01:28+00:00; -1s from scanner time.
+|_http-title: Not Found
+| tls-alpn: 
+|   h2
+|_  http/1.1
+|_http-server-header: Microsoft-HTTPAPI/2.0
+| ssl-cert: Subject: commonName=VAGRANT
+| Subject Alternative Name: DNS:VAGRANT, DNS:vagrant
+| Not valid before: 2025-10-17T10:51:35
+|_Not valid after:  2028-10-16T10:51:35
+9389/tcp  open  mc-nmf        .NET Message Framing
+47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-title: Not Found
+|_http-server-header: Microsoft-HTTPAPI/2.0
+49664/tcp open  msrpc         Microsoft Windows RPC
+49665/tcp open  msrpc         Microsoft Windows RPC
+49666/tcp open  msrpc         Microsoft Windows RPC
+49667/tcp open  msrpc         Microsoft Windows RPC
+49671/tcp open  msrpc         Microsoft Windows RPC
+49686/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+49687/tcp open  msrpc         Microsoft Windows RPC
+49689/tcp open  msrpc         Microsoft Windows RPC
+49692/tcp open  msrpc         Microsoft Windows RPC
+49702/tcp open  msrpc         Microsoft Windows RPC
+49731/tcp open  msrpc         Microsoft Windows RPC
+MAC Address: 00:0C:29:B4:1B:88 (VMware)
+Service Info: Host: MEEREEN; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled and required
+| smb-security-mode: 
+|   account_used: guest
+|   authentication_level: user
+|   challenge_response: supported
+|_  message_signing: required
+|_clock-skew: mean: 53m19s, deviation: 2h40m00s, median: -1s
+| smb2-time: 
+|   date: 2025-12-14T20:01:20
+|_  start_date: 2025-12-14T19:42:41
+|_nbstat: NetBIOS name: MEEREEN, NetBIOS user: <unknown>, NetBIOS MAC: 00:0c:29:b4:1b:88 (VMware)
+| smb-os-discovery: 
+|   OS: Windows Server 2016 Standard Evaluation 14393 (Windows Server 2016 Standard Evaluation 6.3)
+|   Computer name: meereen
+|   NetBIOS computer name: MEEREEN\x00
+|   Domain name: essos.local
+|   Forest name: essos.local
+|   FQDN: meereen.essos.local
+|_  System time: 2025-12-14T12:01:20-08:00
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 99.52 seconds
+```
+
+## Foothold
+
+Research findings, data insights, and key considerations and document how you got a foothold on the vulnerable box.
+
+## Privilege Escalation
+
+Document how you were able to more laterally and gain a higher privilege

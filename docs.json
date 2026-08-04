@@ -68,6 +68,19 @@
         ]
       },
       {
+        "tab": "Windows Pentesting",
+        "icon": "windows",
+        "pages": [
+          "ad-enum",
+          "ad-recon",
+          "smb-enum"
+        ]
+      },
+      {
+        "tab": "Linux Pentesting",
+        "icon": "linux"
+      },
+      {
         "tab": "Tools & Tradecraft",
         "icon": "wrench",
         "pages": [
@@ -76,22 +89,8 @@
         ]
       },
       {
-        "tab": "Templates",
-        "icon": "file-code",
-        "pages": [
-          "templates/ctf-writeup",
-          "templates/vulnerability-analysis",
-          "templates/tool-review",
-          "templates/formatting-guide",
-          "templates/components-reference"
-        ]
-      },
-      {
-        "tab": "Home Lab"
-      },
-      {
         "tab": "GOAD",
-        "icon": "file-code",
+        "icon": "windows",
         "pages": [
           "GOAD/Overview",
           "GOAD/Installation",
@@ -103,15 +102,18 @@
         ]
       },
       {
-        "tab": "Windows Pentesting",
-        "pages": [
-          "ad-enum",
-          "ad-recon",
-          "smb-enum"
-        ]
+        "tab": "Home Lab"
       },
       {
-        "tab": "Linux Pentesting"
+        "tab": "Templates",
+        "icon": "file-code",
+        "pages": [
+          "templates/ctf-writeup",
+          "templates/vulnerability-analysis",
+          "templates/tool-review",
+          "templates/formatting-guide",
+          "templates/components-reference"
+        ]
       }
     ]
   },
